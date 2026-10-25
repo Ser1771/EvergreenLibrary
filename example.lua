@@ -1,4 +1,4 @@
-local Library = loadstring(readfile("Evergreen.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ser1771/EvergreenLibrary/refs/heads/main/Evergreen.lua"))()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
