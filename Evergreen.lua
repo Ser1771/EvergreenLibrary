@@ -223,6 +223,15 @@ local Themes = {
         SubText = Color3.fromRGB(120, 105, 90), Accent = Color3.fromRGB(200, 140, 70), AccentText = Color3.fromRGB(255, 255, 255),
         Red = Color3.fromRGB(200, 80, 70), IsLight = true,
     },
+    -- Palette lifted from the Vitality reference: flat near-black panels, deep crimson accent
+    Vitality = {
+        Window = Color3.fromRGB(18, 18, 18), Sidebar = Color3.fromRGB(16, 16, 16), Titlebar = Color3.fromRGB(22, 22, 22),
+        Card = Color3.fromRGB(23, 23, 23), Control = Color3.fromRGB(28, 28, 28), ControlHover = Color3.fromRGB(38, 38, 38),
+        Popup = Color3.fromRGB(24, 24, 24), Segment = Color3.fromRGB(38, 38, 38), Track = Color3.fromRGB(35, 35, 35),
+        SliderFill = Color3.fromRGB(181, 32, 55), Outline = Color3.fromRGB(43, 43, 43), Text = Color3.fromRGB(232, 232, 232),
+        SubText = Color3.fromRGB(139, 139, 139), Accent = Color3.fromRGB(181, 32, 55), AccentText = Color3.fromRGB(255, 255, 255),
+        Red = Color3.fromRGB(255, 95, 87), IsLight = false,
+    },
 }
 
 --// Library \\--
@@ -509,10 +518,19 @@ local function Bind(Inst, Prop, Key)
     T[Prop] = Key
 end
 
-local function Corner(Parent, R) return New("UICorner", { CornerRadius = UDim.new(0, R), Parent = Parent }) end
+-- Corner / Stroke / List route through the skin so a skin swap can restyle live instances
+local function Corner(Parent, R)
+    local C = New("UICorner", { CornerRadius = UDim.new(0, Library.SkinRadius and Library:SkinRadius(R) or R), Parent = Parent })
+    Library.Corners = Library.Corners or {}
+    Library.Corners[C] = R
+    return C
+end
 local function Stroke(Parent, Color, Thickness, Transparency)
+    local Skin = Library.Skin
+    local T = Thickness or 1
+    if Skin and Skin.BorderThickness and T == 1 then T = Skin.BorderThickness end
     return New("UIStroke", {
-        Color = Color or "Outline", Thickness = Thickness or 1, Transparency = Transparency or 0,
+        Color = Color or "Outline", Thickness = T, Transparency = Transparency or 0,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = Parent,
     })
 end
@@ -523,11 +541,15 @@ local function Pad(Parent, T, R, B, L)
     })
 end
 local function List(Parent, Padding, Dir, HA, VA)
-    return New("UIListLayout", {
-        Padding = UDim.new(0, Padding or 0), FillDirection = Dir or Enum.FillDirection.Vertical,
+    local Base = Padding or 0
+    local L = New("UIListLayout", {
+        Padding = UDim.new(0, Library.SkinGap and Library:SkinGap(Base) or Base), FillDirection = Dir or Enum.FillDirection.Vertical,
         HorizontalAlignment = HA or Enum.HorizontalAlignment.Left, VerticalAlignment = VA or Enum.VerticalAlignment.Top,
         SortOrder = Enum.SortOrder.LayoutOrder, Parent = Parent,
     })
+    Library.SkinLists = Library.SkinLists or {}
+    Library.SkinLists[L] = Base
+    return L
 end
 local function Flex(Parent) return New("UIFlexItem", { FlexMode = Enum.UIFlexMode.Fill, Parent = Parent }) end
 
@@ -539,10 +561,31 @@ local function Two(Key, TopAdd, BottomAdd)
         return ColorSequence.new(Lighten(C, TopAdd), Lighten(C, BottomAdd))
     end
 end
+-- Panel colors live in the gradient (white base * gradient), so a flat skin collapses
+-- the ramp into one solid color taken from its midpoint instead of dropping it.
+local function GradientMid(Seq)
+    -- typeof(ColorSequence) is "ColorSequence" and typeof(Color3) is "Color3" on Roblox,
+    -- so probe for Keypoints / Lerp instead of trusting the type name
+    local KPs = Seq ~= nil and Seq.Keypoints
+    if not (KPs and #KPs > 0) then return nil end
+    local A, B = KPs[1].Value, KPs[#KPs].Value
+    local Ok, Mid = pcall(function() return A:Lerp(B, 0.5) end)
+    if Ok and typeof(Mid) == "Color3" then return Mid end
+    if typeof(A) == "Color3" then return A end
+    return nil
+end
 local function Grad(Inst, Fn, Rotation)
     local G = New("UIGradient", { Rotation = Rotation or 90, Parent = Inst })
-    G.Color = Fn()
-    Library.Gradients[G] = Fn
+    -- Re-evaluated on theme *and* skin changes: ramps collapse to a solid color on flat skins
+    local function Auto()
+        if Library.Skin and Library.Skin.Flat then
+            local Ok, Seq = pcall(Fn)
+            return ColorSequence.new((Ok and GradientMid(Seq)) or Color3.new(1, 1, 1))
+        end
+        return Fn()
+    end
+    G.Color = Auto()
+    Library.Gradients[G] = Auto
     return G
 end
 function Library:UpdateGradients()
@@ -562,6 +605,18 @@ function Library:UpdateColorsUsingRegistry()
         pcall(ApplyThemedProps, Inst, Props)
     end
 end
+
+--// Skin typefaces: a skin may swap the whole typography, themes only ever change colors
+local function SkinFont(Spec, FallbackFace)
+    if typeof(Spec) ~= "table" or typeof(Spec.Family) ~= "string" then return FallbackFace end
+    local Ok, Face = pcall(function()
+        local Weight = Enum.FontWeight[Spec.Weight or "Medium"]
+        return Font.new(Spec.Family, Weight, Enum.FontStyle.Normal)
+    end)
+    return Ok and Face or FallbackFace
+end
+
+local defaultFonts = { Font = Library.Scheme.Font, FontBold = Library.Scheme.FontBold }
 
 function Library:RefreshTheme()
     Library:UpdateColorsUsingRegistry()
@@ -596,6 +651,8 @@ function Library:SetTheme(Theme)
             end
         end
         Library.ThemeName = Theme
+        -- A theme picked by hand wins over the one a skin suggests
+        if not Library.ApplyingSkin then Library.ThemePinned = true end
     elseif typeof(Theme) == "table" then
         for K, V in Theme do
             Library.Scheme[K] = V
@@ -606,6 +663,12 @@ function Library:SetTheme(Theme)
         end
     else
         return
+    end
+
+    -- Skins own the typefaces; a theme swap only changes colors
+    if Library.Skin and Library.Skin.Font then
+        Library.Scheme.Font = SkinFont(Library.Skin.Font, defaultFonts.Font)
+        Library.Scheme.FontBold = SkinFont(Library.Skin.BoldFont, defaultFonts.FontBold)
     end
 
     if Library.AccentOverride then
@@ -633,6 +696,229 @@ function Library:SetFont(FontFace)
     Library.Scheme.Font = FontFace
     Library:UpdateColorsUsingRegistry()
 end
+
+--// Skins \\--
+-- A skin is the *design* layer: geometry, borders, decoration, type and chrome layout.
+-- A theme is the *color* layer. Any skin works with any theme, and both can be swapped live.
+--
+-- Builders never read skin values directly from literals: they go through Skin.* helpers and the
+-- Corner / Stroke / List / Grad wrappers below, which register every instance they style. That is
+-- what lets SetSkin() restyle a window that is already on screen instead of rebuilding it.
+local DefaultSkin = {
+    Name = "Default",
+    Font = nil,          -- nil = keep Library.Scheme.Font defaults
+    BoldFont = nil,
+    Square = false,      -- square off every radius below CornerKeep
+    CornerKeep = 90,     -- radii at or above this are the "pill" radius below
+    PillRadius = nil,    -- nil = keep pills round; a number squares them off
+    RadiusScale = 1,     -- multiplier for the remaining radii
+    BorderThickness = nil,
+    GapScale = 1,        -- multiplier for UIListLayout padding
+    Scrollbar = nil,     -- { Thickness = 2, Color = "Accent", Transparency = 0 } to show thin scrollbars
+    Flat = false,        -- drop decorative panel gradients
+
+    Titlebar = { Height = 40, Align = "Center", Icon = nil, TrafficLights = true, SidebarButton = true, UppercaseTitle = false },
+    Tabs = { Style = "Sidebar", Height = 30, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false },
+    Content = { ShowHeader = true, HeaderHeight = 54, PadX = 16 },
+    Groupbox = { HeaderHeight = 36, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12 },
+    Toggle = { Style = "Switch", BoxSize = 18, CheckGlyph = true },
+    Slider = { TrackHeight = 12, Knob = true, Area = 30, Square = false },
+    Button = { Flat = false },
+    Dropdown = { Chevron = nil, Height = 28 },
+    Keybind = { Title = "Keybinds", Accent = false },
+}
+
+local VitalitySkin = {
+    Name = "Vitality",
+    DefaultTheme = "Vitality",
+    Font = { Family = "rbxasset://fonts/families/RobotoMono.json", Weight = "Medium" },
+    BoldFont = { Family = "rbxasset://fonts/families/RobotoMono.json", Weight = "Bold" },
+    Square = true,
+    CornerKeep = 90,
+    PillRadius = 3,
+    RadiusScale = 0,
+    BorderThickness = 1,
+    GapScale = 0.82,
+    Flat = true,
+    Scrollbar = { Thickness = 2, Color = "Accent", Transparency = 0 },
+
+    Titlebar = { Height = 42, Align = "Left", Icon = "activity", TrafficLights = false, SidebarButton = true, UppercaseTitle = false },
+    -- Navigation stays in the usual sidebar: squared rows, flat crimson fill on the active tab
+    Tabs = { Style = "Sidebar", Height = 32, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false, Uppercase = false },
+    Content = { ShowHeader = false, HeaderHeight = 0, PadX = 14 },
+    Groupbox = { HeaderHeight = 34, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12 },
+    Toggle = { Style = "Box", BoxSize = 16, CheckGlyph = false },
+    Slider = { TrackHeight = 8, Knob = false, Area = 22, Square = true },
+    Button = { Flat = true },
+    Dropdown = { Chevron = "▼", Height = 30 },
+    Keybind = { Title = "Keybind List", Accent = true },
+}
+
+local Skins = { Default = DefaultSkin, Vitality = VitalitySkin }
+Library.Skins = Skins
+Library.Skin = DefaultSkin
+Library.SkinName = "Default"
+
+-- Deep-copies a skin spec over a base, so specs can be partial
+local function MergeSkin(Base, Over)
+    local Out = {}
+    for Key, Value in Base do
+        Out[Key] = typeof(Value) == "table" and MergeSkin(Value, {}) or Value
+    end
+    for Key, Value in Over do
+        if typeof(Value) == "table" and typeof(Out[Key]) == "table" then
+            Out[Key] = MergeSkin(Out[Key], Value)
+        else
+            Out[Key] = Value
+        end
+    end
+    return Out
+end
+
+-- Every styled instance is remembered so a skin swap can restyle it in place
+Library.Corners = {}
+Library.SkinStrokes = {}
+Library.SkinLists = {}
+Library.SkinGradients = {}
+Library.SkinHooks = {}
+
+-- Resolves a corner radius through the active skin
+function Library:SkinRadius(R)
+    local Skin = Library.Skin or DefaultSkin
+    if R == nil then return 0 end
+    if R >= (Skin.CornerKeep or 90) then
+        if Skin.PillRadius ~= nil then return Skin.PillRadius end
+        return R
+    end
+    if Skin.Square then return 0 end
+    if (Skin.RadiusScale or 1) == 1 then return R end
+    return math.floor(R * Skin.RadiusScale + 0.5)
+end
+
+function Library:SkinGap(Gap)
+    local Skin = Library.Skin or DefaultSkin
+    return math.max(0, math.floor((Gap or 0) * (Skin.GapScale or 1) + 0.5))
+end
+
+-- Some skins show a thin colored scrollbar instead of hiding it entirely
+function Library:SkinScrollbar(Scroll)
+    local Bar = (Library.Skin or DefaultSkin).Scrollbar
+    if typeof(Scroll) ~= "Instance" or not Scroll:IsA("ScrollingFrame") then return end
+    if not Bar then
+        Scroll.ScrollBarThickness = 0
+        Scroll.ScrollBarImageTransparency = 1
+        return
+    end
+    Scroll.ScrollBarThickness = Bar.Thickness or 2
+    Scroll.ScrollBarImageTransparency = Bar.Transparency or 0
+    local Color = Library.Scheme[Bar.Color or "Accent"]
+    if typeof(Color) == "Color3" then Scroll.ScrollBarImageColor3 = Color end
+end
+
+function Library:ApplySkinScrollbars()
+    local Bar = (Library.Skin or DefaultSkin).Scrollbar
+    if not Library.ScreenGui then return 0 end
+    local Count = 0
+    for _, Inst in Library.ScreenGui:GetDescendants() do
+        if Inst:IsA("ScrollingFrame") then
+            Library:SkinScrollbar(Inst)
+            Count += 1
+        end
+    end
+    return Count
+end
+
+-- Re-applies every registered corner / gap after a skin change
+function Library:ApplySkinGeometry()
+    for Corner_, Base in Library.Corners do
+        pcall(function() Corner_.CornerRadius = UDim.new(0, Library:SkinRadius(Base)) end)
+    end
+    for Layout_, Base in Library.SkinLists do
+        pcall(function() Layout_.Padding = UDim.new(0, Library:SkinGap(Base)) end)
+    end
+end
+
+function Library:GetSkin(): string
+    return Library.SkinName or "Default"
+end
+
+function Library:GetSkins(): { string }
+    local Names = {}
+    for Name in Skins do table.insert(Names, Name) end
+    table.sort(Names)
+    return Names
+end
+
+function Library:GetSkinSpec(Name): any
+    return Skins[Name or Library.SkinName or "Default"]
+end
+
+-- Library:SetSkin("Vitality")  -- design only; colors keep coming from the current theme
+function Library:SetSkin(Name, Silent)
+    if typeof(Name) ~= "string" or not Skins[Name] then Name = "Default" end
+    local Spec = MergeSkin(DefaultSkin, Skins[Name])
+
+    Library.SkinName = Name
+    Library.Skin = Spec
+
+    --// Type
+    local FontFace, BoldFace = Spec.Font, Spec.BoldFont
+    if FontFace or BoldFace then
+        Library.Scheme.Font = SkinFont(FontFace, defaultFonts.Font)
+        Library.Scheme.FontBold = SkinFont(BoldFace, defaultFonts.FontBold)
+    else
+        Library.Scheme.Font = defaultFonts.Font
+        Library.Scheme.FontBold = defaultFonts.FontBold
+    end
+
+    --// Theme suggested by the skin (only when the user has not pinned one)
+    if not Silent and Spec.DefaultTheme and Skins[Name] and not Library.ThemePinned then
+        Library.ApplyingSkin = true
+        Library:SetTheme(Spec.DefaultTheme)
+        Library.ApplyingSkin = false
+        Library.Scheme.Font = SkinFont(FontFace, defaultFonts.Font)
+        Library.Scheme.FontBold = SkinFont(BoldFace, defaultFonts.FontBold)
+    end
+
+    Library:ApplySkinGeometry()
+    Library:UpdateColorsUsingRegistry()
+    Library:UpdateGradients()
+    Library:ApplySkinScrollbars()
+
+    if Library.Window and Library.Window.ApplySkin then pcall(Library.Window.ApplySkin, Library.Window) end
+    for _, Tab in Library.Tabs do
+        if typeof(Tab) == "table" and Tab.ApplySkin then pcall(Tab.ApplySkin, Tab) end
+    end
+    for _, Box in Library.DependencyBoxes do
+        if typeof(Box) == "table" and Box.ApplySkin then pcall(Box.ApplySkin, Box) end
+    end
+    -- controls that rebuild or resize themselves (toggles, sliders, groupbox headers)
+    for _, List_ in { Library.Toggles, Library.Options, Library.Labels, Library.Buttons } do
+        for _, El in List_ do
+            if typeof(El) == "table" and not El.Destroyed and El.ApplySkin then pcall(El.ApplySkin, El) end
+        end
+    end
+    for _, Hook in Library.SkinHooks do
+        pcall(Hook, Name)
+    end
+
+    local DD = Options and Options.EvergreenSkin
+    if DD and typeof(DD.SetValue) == "function" and not Library.SyncingSkin then
+        Library.SyncingSkin = true
+        pcall(DD.SetValue, DD, Name)
+        Library.SyncingSkin = false
+    end
+
+    return true
+end
+
+-- Small helpers used by builders
+function Library:IsFlatSkin() return (Library.Skin or DefaultSkin).Flat == true end
+function Library:SkinTabs() return (Library.Skin or DefaultSkin).Tabs or DefaultSkin.Tabs end
+function Library:SkinTitlebar() return (Library.Skin or DefaultSkin).Titlebar or DefaultSkin.Titlebar end
+function Library:SkinGroupbox() return (Library.Skin or DefaultSkin).Groupbox or DefaultSkin.Groupbox end
+function Library:SkinToggle() return (Library.Skin or DefaultSkin).Toggle or DefaultSkin.Toggle end
+function Library:SkinSlider() return (Library.Skin or DefaultSkin).Slider or DefaultSkin.Slider end
 
 --// Icons \\--
 -- Backend: the Molto icon registry (vendored below — original module, plus a sprite-only accessor).
@@ -1323,6 +1609,12 @@ if not ParentOk or not ScreenGui.Parent then
 end
 Library.ScreenGui = ScreenGui
 
+ScreenGui.DescendantAdded:Connect(function(Inst)
+    if Inst:IsA("ScrollingFrame") and Library.Skin and Library.Skin.Scrollbar then
+        Library:SkinScrollbar(Inst)
+    end
+end)
+
 ScreenGui.DescendantRemoving:Connect(function(Inst)
     if not (Library.Registry[Inst] or Library.Gradients[Inst] or Library.DPIScales[Inst]
         or Library.Surfaces[Inst] or Library.AppliedIcons[Inst]
@@ -1539,7 +1831,16 @@ Library:AddGlass(KeybindFrame)
 Stroke(KeybindFrame, "Outline", 1, 0.2)
 Pad(KeybindFrame, 8, 12, 10, 12)
 List(KeybindFrame, 4)
-New("TextLabel", { AutomaticSize = Enum.AutomaticSize.XY, Size = UDim2.fromOffset(0, 16), Text = "Keybinds", FontFace = "FontBold", TextSize = 12, LayoutOrder = -1, Parent = KeybindFrame })
+local KeybindTitle = New("TextLabel", { AutomaticSize = Enum.AutomaticSize.XY, Size = UDim2.fromOffset(0, 16), Text = "Keybinds", FontFace = "FontBold", TextSize = 12, LayoutOrder = -1, Parent = KeybindFrame })
+do
+    local function RestyleKeybindSkin()
+        local K = Library:GetSkinSpec() and Library:GetSkinSpec().Keybind or {}
+        KeybindTitle.Text = K.Title or "Keybinds"
+        KeybindTitle.TextColor3 = K.Accent and Library.Scheme.Accent or Library.Scheme.Text
+    end
+    table.insert(Library.SkinHooks, RestyleKeybindSkin)
+    RestyleKeybindSkin()
+end
 local KeybindContainer = New("Frame", { BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.XY, Size = UDim2.fromOffset(0, 0), Parent = KeybindFrame })
 List(KeybindContainer, 2)
 Library.KeybindFrame, Library.KeybindContainer = KeybindFrame, KeybindContainer
@@ -2364,7 +2665,9 @@ function Funcs:AddButton(...)
         Flex(B.Base)
         Corner(B.Base, 7)
         B.Stroke = Stroke(B.Base, "Outline", 1, 0.55)
-        New("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.78, 0.78, 0.78)), Parent = B.Base })
+        if not Library:IsFlatSkin() then
+            New("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.78, 0.78, 0.78)), Parent = B.Base })
+        end
 
         local Icon = Library:GetCustomIcon(B.Icon)
         local TextColor = B.Primary and "AccentText" or (B.Risky and "Red" or "Text")
@@ -2531,7 +2834,9 @@ function Funcs:AddCircleButton(...)
     B.Base = New("TextButton", { BackgroundColor3 = BaseKey, Size = UDim2.fromOffset(SizeN, SizeN), Visible = B.Visible, Parent = Holder })
     Corner(B.Base, 99)
     B.Stroke = Stroke(B.Base, "Outline", 1, 0.55)
-    New("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.78, 0.78, 0.78)), Parent = B.Base })
+    if not Library:IsFlatSkin() then
+        New("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.78, 0.78, 0.78)), Parent = B.Base })
+    end
     local BtnScale = New("UIScale", { Scale = 1, Parent = B.Base })
 
     local TextColor = B.Primary and "AccentText" or (B.Risky and "Red" or "Text")
@@ -2605,7 +2910,7 @@ function Funcs:AddToggle(Idx, Info)
     if typeof(Idx) == "table" and Info == nil then Info, Idx = Idx, nil end
     Info = Library:Validate(Info, Templates.Toggle)
     local Group = self
-    local Style = (Library.ForceCheckbox or Info.Checkbox) and "Checkbox" or "Switch"
+    local BaseStyle = (Library.ForceCheckbox or Info.Checkbox) and "Checkbox" or "Switch"
 
     local Toggle = {
         Type = "Toggle", Text = Info.Text, Value = Info.Default == true, Callback = Info.Callback, Changed = Info.Changed,
@@ -2621,36 +2926,52 @@ function Funcs:AddToggle(Idx, Info)
     Toggle.AddonHolder = MakeAddonHolder(Row)
     Toggle.TextLabel = Label
 
-    local Switch, Knob, Check
-    if Style == "Switch" then
-        Switch = New("Frame", { BackgroundColor3 = "Track", Size = UDim2.fromOffset(34, 20), LayoutOrder = 3, Parent = Row })
-        Corner(Switch, 99)
-        Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.fromOffset(16, 16), Parent = Switch })
-        Corner(Knob, 99)
-        Stroke(Knob, Color3.new(0, 0, 0), 1, 0.88)
-    else
-        Switch = New("Frame", { BackgroundColor3 = "Control", Size = UDim2.fromOffset(18, 18), LayoutOrder = 3, Parent = Row })
-        Corner(Switch, 5)
-        Stroke(Switch, "Outline", 1, 0.2)
-        Check = Glyph(Switch, "check", "✓", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(12, 12), Color = "AccentText" })
-        GlyphTransparency(Check, 1)
+    local Switch, Knob, Check, SwitchBox = nil, nil, nil, false
+    -- The control is rebuilt from scratch when the skin changes style
+    local function BuildToggleControl()
+        if Switch then
+            Switch:Destroy()
+            Switch, Knob, Check = nil, nil, nil
+        end
+        local ST = Library:SkinToggle()
+        local BoxSize = ST.BoxSize or 18
+        -- box styles draw a filled square instead of an iOS switch
+        SwitchBox = BaseStyle == "Checkbox" or ST.Style == "Box"
+        if not SwitchBox then
+            Switch = New("Frame", { BackgroundColor3 = "Track", Size = UDim2.fromOffset(34, 20), LayoutOrder = 3, Parent = Row })
+            Corner(Switch, 99)
+            Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.fromOffset(16, 16), Parent = Switch })
+            Corner(Knob, 99)
+            Stroke(Knob, Color3.new(0, 0, 0), 1, 0.88)
+        else
+            Switch = New("Frame", { BackgroundColor3 = "Control", Size = UDim2.fromOffset(BoxSize, BoxSize), LayoutOrder = 3, Parent = Row })
+            Corner(Switch, 5)
+            Stroke(Switch, "Outline", 1, 0.2)
+            Check = Glyph(Switch, "check", "✓", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(12, 12), Color = "AccentText" })
+            -- square "LED" styles have no tick: the filled color carries the state
+            Check.Visible = ST.CheckGlyph ~= false
+            if ST.CheckGlyph ~= false then GlyphTransparency(Check, 1) end
+        end
+        if Toggle.Display then Toggle:Display(true) end
     end
 
     function Toggle:Display(Instant)
-        if Library.Unloaded then return end
+        if Library.Unloaded or not Switch then return end
         local On = Toggle.Value
         local Dim = Toggle.Disabled and 0.55 or 0
-        if Style == "Switch" then
+        if not SwitchBox then
             Anim(Switch, { BackgroundColor3 = On and Library.Scheme.Accent or Library.Scheme.Track, BackgroundTransparency = Dim }, Instant)
             Bind(Switch, "BackgroundColor3", On and "Accent" or "Track")
             Anim(Knob, { Position = On and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 2, 0.5, 0), BackgroundTransparency = Dim }, Instant)
         else
             Anim(Switch, { BackgroundColor3 = On and Library.Scheme.Accent or Library.Scheme.Control, BackgroundTransparency = Dim }, Instant)
             Bind(Switch, "BackgroundColor3", On and "Accent" or "Control")
-            GlyphTransparency(Check, On and Dim or 1)
+            if Check and Check.Visible then GlyphTransparency(Check, On and Dim or 1) end
         end
         Anim(Label, { TextTransparency = Toggle.Disabled and 0.55 or 0 }, Instant)
     end
+
+    function Toggle:ApplySkin() BuildToggleControl() end
 
     function Toggle:OnChanged(F) Toggle.Changed = F end
     function Toggle:RunChanged()
@@ -2685,6 +3006,7 @@ function Funcs:AddToggle(Idx, Info)
         if not Toggle.Disabled then Toggle:SetValue(not Toggle.Value) end
     end))
 
+    BuildToggleControl()
     Toggle:Display(true)
     Toggle.Default = Toggle.Value
     setmetatable(Toggle, BaseAddons)
@@ -2937,16 +3259,29 @@ function Funcs:AddSlider(Idx, Info)
         AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0.4, 0, 1, 0),
         TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = "SubText", ClearTextOnFocus = false, Text = "", Parent = Top,
     })
-    local KS = 18 -- knob is taller than the track so it visibly sticks out of it
-    local Area = New("TextButton", { Size = UDim2.new(1, 0, 0, 30), ClipsDescendants = false, Parent = Holder })
-    local Track = New("Frame", { BackgroundColor3 = "Track", BackgroundTransparency = 0.35, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.new(1, 0, 0, 12), ClipsDescendants = false, Parent = Area })
+    local SkinSlider = Library:SkinSlider()
+    -- knob is taller than the track so it visibly sticks out of it; knob-less skins set KS to 0
+    local KS = if SkinSlider.Knob == false then 0 else 18
+    local Area = New("TextButton", { Size = UDim2.new(1, 0, 0, SkinSlider.Area or 30), ClipsDescendants = false, Parent = Holder })
+    local Track = New("Frame", { BackgroundColor3 = "Track", BackgroundTransparency = 0.35, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.new(1, 0, 0, SkinSlider.TrackHeight or 12), ClipsDescendants = false, Parent = Area })
     Corner(Track, 99)
     Stroke(Track, "Outline", 1, 0.6)
     local FillBar = New("Frame", { BackgroundColor3 = "SliderFill", Size = UDim2.fromScale(0.5, 1), Parent = Track })
     Corner(FillBar, 99)
-    local Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(KS, KS), ZIndex = 3, Parent = Area })
+    local Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(KS, KS), Visible = KS > 0, ZIndex = 3, Parent = Area })
     Corner(Knob, 99)
     Stroke(Knob, Color3.new(0, 0, 0), 1, 0.8)
+
+    -- thin tracks / knob-less handles come from the skin and can change while the UI is live
+    function Slider:ApplySkin()
+        local SS = Library:SkinSlider()
+        KS = if SS.Knob == false then 0 else 18
+        Area.Size = UDim2.new(1, 0, 0, SS.Area or 30)
+        Track.Size = UDim2.new(1, 0, 0, SS.TrackHeight or 12)
+        Knob.Size = UDim2.fromOffset(KS, KS)
+        Knob.Visible = KS > 0
+        Slider:Display()
+    end
 
     local function Format(V)
         local N = Slider.Rounding > 0 and string.format("%." .. Slider.Rounding .. "f", V) or tostring(V)
@@ -3049,22 +3384,35 @@ function Funcs:AddRangeSlider(Idx, Info)
         AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0.45, 0, 1, 0),
         TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = "SubText", Text = "", Parent = Top,
     })
-    local KS = 18
-    local Area = New("TextButton", { Size = UDim2.new(1, 0, 0, 30), ClipsDescendants = false, Parent = Holder })
-    local Track = New("Frame", { BackgroundColor3 = "Track", BackgroundTransparency = 0.35, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.new(1, 0, 0, 12), Parent = Area })
+    local SkinSlider = Library:SkinSlider()
+    local KS = if SkinSlider.Knob == false then 0 else 18
+    local Area = New("TextButton", { Size = UDim2.new(1, 0, 0, SkinSlider.Area or 30), ClipsDescendants = false, Parent = Holder })
+    local Track = New("Frame", { BackgroundColor3 = "Track", BackgroundTransparency = 0.35, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.new(1, 0, 0, SkinSlider.TrackHeight or 12), Parent = Area })
     Corner(Track, 99)
     Stroke(Track, "Outline", 1, 0.6)
     local FillBar = New("Frame", { BackgroundColor3 = "SliderFill", Size = UDim2.fromScale(0.5, 1), Parent = Track })
     Corner(FillBar, 99)
 
     local function MakeKnob()
-        local Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.fromOffset(KS, KS), ZIndex = 3, Parent = Area })
+        local Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.fromOffset(KS, KS), Visible = KS > 0, ZIndex = 3, Parent = Area })
         Corner(Knob, 99)
         Stroke(Knob, Color3.new(0, 0, 0), 1, 0.8)
         return Knob
     end
     local KnobL = MakeKnob()
     local KnobR = MakeKnob()
+
+    function RS:ApplySkin()
+        local SS = Library:SkinSlider()
+        KS = if SS.Knob == false then 0 else 18
+        Area.Size = UDim2.new(1, 0, 0, SS.Area or 30)
+        Track.Size = UDim2.new(1, 0, 0, SS.TrackHeight or 12)
+        for _, K in { KnobL, KnobR } do
+            K.Size = UDim2.fromOffset(KS, KS)
+            K.Visible = KS > 0
+        end
+        RS:Display()
+    end
 
     local function Format(V)
         local N = RS.Rounding > 0 and string.format("%." .. RS.Rounding .. "f", V) or tostring(V)
@@ -6200,6 +6548,7 @@ function Library:Toggle(Value)
 end
 
 function Library:CreateWindow(WindowInfo)
+    local RawTheme = typeof(WindowInfo) == "table" and WindowInfo.Theme or nil
     WindowInfo = Library:Validate(WindowInfo, Templates.Window)
     if Library.Window then warn("[Evergreen] A window already exists.") return Library.Window end
 
@@ -6210,14 +6559,23 @@ function Library:CreateWindow(WindowInfo)
         math.clamp(WindowInfo.Size.Y.Offset, WindowInfo.MinSize.Y, math.max(WindowInfo.MinSize.Y, View.Y - 40))
     )
 
-    Library:SetTheme(WindowInfo.Theme)
+    -- An explicit Theme always wins; otherwise the active skin's suggested theme is used.
+    -- Only an explicit choice pins the theme, so skins can keep suggesting palettes later.
+    local SkinTheme = Library.Skin and Library.Skin.DefaultTheme
+    Library.ApplyingSkin = RawTheme == nil
+    Library:SetTheme(RawTheme or SkinTheme or WindowInfo.Theme)
+    Library.ApplyingSkin = false
+    if RawTheme ~= nil then Library.ThemePinned = true end
     if WindowInfo.Accent then Library:SetAccent(WindowInfo.Accent) end
     Library:SetNotifySide(WindowInfo.NotifySide)
     Library.ToggleKeybind = WindowInfo.ToggleKeybind
 
     local Window = { Info = WindowInfo }
+    local Skin = Library.Skin
+    local SkinBar = (Skin.Tabs.Style == "Bar")
     local SidebarWidth = WindowInfo.SidebarWidth
-    local TitleH = 40
+    local TitleH = Skin.Titlebar.Height or 40
+    local TabH = SkinBar and (Skin.Tabs.Height or 38) or 0
 
     --// Root + shadow + main
     local Root = New("Frame", {
@@ -6263,8 +6621,9 @@ function Library:CreateWindow(WindowInfo)
     local PreMinSize, PreMaxState
 
     -- traffic lights
-    if WindowInfo.ShowTrafficLights then
+    if WindowInfo.ShowTrafficLights and Skin.Titlebar.TrafficLights ~= false then
         local Lights = New("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 14, 0.5, 0), Size = UDim2.fromOffset(64, 16), Parent = TitleBar })
+        Window.Lights = Lights
         List(Lights, 8, Enum.FillDirection.Horizontal, nil, Enum.VerticalAlignment.Center)
         local Glyphs, Hover = {}, 0
         local function Refresh()
@@ -6288,14 +6647,41 @@ function Library:CreateWindow(WindowInfo)
         MakeLight(Color3.fromRGB(40, 200, 64), "+", function() Window:SetMaximized(not Maximized) end)
     end
 
-    -- centered title
-    local TitleHolder = New("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, -400, 1, 0), Parent = TitleBar })
-    List(TitleHolder, 0, nil, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center)
-    local TitleRich = Library:RenderRich(TitleHolder, WindowInfo.Title, { Size = 14, Bold = true, Align = "Center", LayoutOrder = 1 })
-    local SubtitleRich = Library:RenderRich(TitleHolder, WindowInfo.Subtitle or "", { Size = 10, Color = "SubText", Align = "Center", LayoutOrder = 2, Visible = WindowInfo.Subtitle ~= nil })
+    -- title: centered by default, left-aligned (with an optional wordmark icon) for bar skins
+    local LeftTitle = Skin.Titlebar.Align == "Left"
+    local TitleHolder = New("Frame", {
+        BackgroundTransparency = 1,
+        AnchorPoint = LeftTitle and Vector2.new(0, 0.5) or Vector2.new(0.5, 0.5),
+        Position = LeftTitle and UDim2.new(0, 16, 0.5, 0) or UDim2.fromScale(0.5, 0.5),
+        Size = LeftTitle and UDim2.new(1, -260, 1, 0) or UDim2.new(1, -400, 1, 0), Parent = TitleBar,
+    })
+    local TitleList = List(TitleHolder, LeftTitle and 8 or 0,
+        LeftTitle and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical,
+        LeftTitle and Enum.HorizontalAlignment.Left or Enum.HorizontalAlignment.Center,
+        Enum.VerticalAlignment.Center)
+
+    local Wordmark
+    local WordmarkIcon = Skin.Titlebar.Icon
+    if WordmarkIcon then
+        Wordmark = Glyph(TitleHolder, WordmarkIcon, "✳", {
+            AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromOffset(0, 0),
+            Size = UDim2.fromOffset(16, 16), Color = "Accent", LayoutOrder = 0,
+        })
+    end
+
+    Window.Wordmark = Wordmark
+
+    local TitleRich = Library:RenderRich(TitleHolder, WindowInfo.Title, {
+        Size = 14, Bold = true, Align = LeftTitle and "Left" or "Center", LayoutOrder = 1,
+        Visible = WindowInfo.Title ~= "",
+    })
+    local SubtitleRich = Library:RenderRich(TitleHolder, WindowInfo.Subtitle or "", { Size = 10, Color = "SubText", Align = LeftTitle and "Left" or "Center", LayoutOrder = 2, Visible = WindowInfo.Subtitle ~= nil })
 
     if Window.SidebarVisible == nil then Window.SidebarVisible = true end
-    local SidebarBtn = New("TextButton", { BackgroundColor3 = "Control", BackgroundTransparency = 0.25, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -46, 0.5, 0), Size = UDim2.fromOffset(28, 26), Parent = TitleBar })
+    local SidebarBtn = New("TextButton", {
+        BackgroundColor3 = "Control", BackgroundTransparency = 0.25, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -46, 0.5, 0),
+        Size = UDim2.fromOffset(28, 26), Visible = Skin.Titlebar.SidebarButton ~= false and not SkinBar, Parent = TitleBar,
+    })
     Corner(SidebarBtn, 99)
     local SidebarBtnStroke = Stroke(SidebarBtn, "Outline", 1, 0.5)
     local SidebarGlyph = Glyph(SidebarBtn, "panel-left", "◫", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(14, 14) })
@@ -6489,8 +6875,16 @@ function Library:CreateWindow(WindowInfo)
         Library:UpdateSearch("")
     end
 
+    --// Tab bar: the horizontal chrome used by "Bar" skins (hidden otherwise)
+    local TabBar = New("Frame", {
+        BackgroundColor3 = "Titlebar", BackgroundTransparency = 0, Position = UDim2.fromOffset(0, TitleH),
+        Size = UDim2.new(1, 0, 0, TabH), Visible = SkinBar, ZIndex = 2, Parent = Main,
+    })
+    Library:AddSurface(TabBar, 0, 1)
+    local TabBarLine = New("Frame", { BackgroundColor3 = "Outline", AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 1), Parent = TabBar })
+
     --// Sidebar
-    local Sidebar = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0, Position = UDim2.fromOffset(0, TitleH), Size = UDim2.new(0, SidebarWidth, 1, -TitleH), Parent = Main })
+    local Sidebar = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0, Position = UDim2.fromOffset(0, TitleH), Size = UDim2.new(0, SidebarWidth, 1, -TitleH), Visible = not SkinBar, Parent = Main })
     New("Frame", { BackgroundColor3 = "Outline", AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 0.3, Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 1, 1, 0), Parent = Sidebar })
 
     New("UICorner", { TopLeftRadius = UDim.new(0, 0), TopRightRadius = UDim.new(0, 0), BottomLeftRadius = UDim.new(0, WindowInfo.CornerRadius), BottomRightRadius = UDim.new(0, 0), Parent = Sidebar })
@@ -6498,10 +6892,16 @@ function Library:CreateWindow(WindowInfo)
     Grad(Sidebar, Two("Sidebar", 0.04, -0.02), 90)
     local ChipH = WindowInfo.ShowUserChip and 52 or 0
     local TabsList = New("ScrollingFrame", {
-        Size = UDim2.new(1, -1, 1, -ChipH), CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y, ScrollBarThickness = 0, Parent = Sidebar,
+        Size = if SkinBar then UDim2.fromScale(1, 1) else UDim2.new(1, -1, 1, -ChipH), CanvasSize = UDim2.new(),
+        AutomaticCanvasSize = if SkinBar then Enum.AutomaticSize.None else Enum.AutomaticSize.Y,
+        ScrollBarThickness = 0, Parent = if SkinBar then TabBar else Sidebar,
     })
-    List(TabsList, 2)
-    Pad(TabsList, 10, 8, 8, 8)
+    local TabsLayout = List(TabsList, SkinBar and (Skin.Tabs.Gap or 0) or 2,
+        SkinBar and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical,
+        Enum.HorizontalAlignment.Left, SkinBar and Enum.VerticalAlignment.Center or Enum.VerticalAlignment.Top)
+    local TabsPad = if SkinBar
+        then Pad(TabsList, 0, 0, 0, 0)
+        else Pad(TabsList, Skin.Tabs.Pad or 10, 8, 8, 8)
 
     local FooterLabel
     if WindowInfo.ShowUserChip then
@@ -6514,13 +6914,16 @@ function Library:CreateWindow(WindowInfo)
     end
 
     --// Content
-    local Content = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(SidebarWidth, TitleH), Size = UDim2.new(1, -SidebarWidth, 1, -TitleH), ClipsDescendants = true, Parent = Main })
-    local Header = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 54), Parent = Content })
+    local ChromeH = TitleH + TabH
+    local HeaderH = if Skin.Content.ShowHeader ~= false then (Skin.Content.HeaderHeight or 54) else 0
+    local SidebarX = if SkinBar then 0 else SidebarWidth
+    local Content = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(SidebarX, ChromeH), Size = UDim2.new(1, -SidebarX, 1, -ChromeH), ClipsDescendants = true, Parent = Main })
+    local Header = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, HeaderH), Visible = HeaderH > 0, Parent = Content })
     List(Header, 1, nil, nil, Enum.VerticalAlignment.Center)
-    Pad(Header, 0, 16, 0, 20)
+    Pad(Header, 0, Skin.Content.PadX or 16, 0, (Skin.Content.PadX or 16) + 4)
     local PageTitle = New("TextLabel", { Size = UDim2.new(1, 0, 0, 24), Text = "", FontFace = "FontBold", TextSize = 20, TextXAlignment = Enum.TextXAlignment.Left, Parent = Header })
     local PageDesc = New("TextLabel", { Size = UDim2.new(1, 0, 0, 14), Text = "", TextSize = 12, TextColor3 = "SubText", TextXAlignment = Enum.TextXAlignment.Left, Visible = false, Parent = Header })
-    local Pages = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 54), Size = UDim2.new(1, 0, 1, -54), Parent = Content })
+    local Pages = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, HeaderH), Size = UDim2.new(1, 0, 1, -HeaderH), Parent = Content })
 
     local ScrollArrow = Glyph(Content, "chevron-down", "▾", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -16, 1, -12), Size = UDim2.fromOffset(16, 16), Color = "SubText", Visible = false })
     local ScrollArrowShown = false
@@ -6587,6 +6990,7 @@ function Library:CreateWindow(WindowInfo)
                     math.max(WindowInfo.MinSize.X, StartSize.X.Offset + D.X),
                     math.max(WindowInfo.MinSize.Y, StartSize.Y.Offset + D.Y)
                 )
+                if SkinBar and Window.RefreshTabBar then Window.RefreshTabBar() end
             end
         end))
     end
@@ -6609,12 +7013,74 @@ function Library:CreateWindow(WindowInfo)
         if Window.RefreshSidebarBtn then Window.RefreshSidebarBtn() end
     end
 
+    -- Restructures the whole chrome for a new skin without rebuilding the window
+    function Window:ApplySkin()
+        local S = Library.Skin
+        local Bar = S.Tabs.Style == "Bar"
+        SkinBar = Bar
+        TitleH = S.Titlebar.Height or 40
+        TabH = Bar and (S.Tabs.Height or 38) or 0
+        HeaderH = if S.Content.ShowHeader ~= false then (S.Content.HeaderHeight or 54) else 0
+        local ChromeH = TitleH + TabH
+        SidebarX = if Bar then 0 else SidebarWidth
+
+        TitleBar.Size = UDim2.new(1, 0, 0, TitleH)
+        TabBar.Position = UDim2.fromOffset(0, TitleH)
+        TabBar.Size = UDim2.new(1, 0, 0, TabH)
+        TabBar.Visible = Bar
+
+        Sidebar.Position = UDim2.fromOffset(0, TitleH)
+        Sidebar.Size = UDim2.new(0, SidebarWidth, 1, -TitleH)
+        Sidebar.Visible = (not Bar) and Window.SidebarVisible ~= false
+
+        Content.Position = UDim2.fromOffset(SidebarX, ChromeH)
+        Content.Size = UDim2.new(1, -SidebarX, 1, -ChromeH)
+        Header.Size = UDim2.new(1, 0, 0, HeaderH)
+        Header.Visible = HeaderH > 0 and Window.TabTitleVisible ~= false
+        Pages.Position = UDim2.fromOffset(0, Window.TabTitleVisible ~= false and HeaderH or 0)
+        Pages.Size = UDim2.new(1, 0, 1, -(Window.TabTitleVisible ~= false and HeaderH or 0))
+
+        -- the tab strip moves between the sidebar and the bar above the content
+        TabsList.Parent = Bar and TabBar or Sidebar
+        TabsList.Size = if Bar then UDim2.fromScale(1, 1) else UDim2.new(1, -1, 1, -ChipH)
+        TabsList.AutomaticCanvasSize = if Bar then Enum.AutomaticSize.None else Enum.AutomaticSize.Y
+        TabsLayout.FillDirection = Bar and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical
+        TabsLayout.VerticalAlignment = Bar and Enum.VerticalAlignment.Center or Enum.VerticalAlignment.Top
+        TabsLayout.Padding = UDim.new(0, if Bar then (S.Tabs.Gap or 0) else Library:SkinGap(2))
+        TabsPad.PaddingTop = UDim.new(0, if Bar then 0 else (S.Tabs.Pad or 10))
+        TabsPad.PaddingLeft = UDim.new(0, if Bar then 0 else 8)
+        TabsPad.PaddingRight = UDim.new(0, if Bar then 0 else 8)
+        TabsPad.PaddingBottom = UDim.new(0, if Bar then 0 else 8)
+
+        -- title: centered by default, left-aligned wordmark for bar skins
+        local LeftTitle = S.Titlebar.Align == "Left"
+        TitleHolder.AnchorPoint = LeftTitle and Vector2.new(0, 0.5) or Vector2.new(0.5, 0.5)
+        TitleHolder.Position = LeftTitle and UDim2.new(0, 46, 0.5, 0) or UDim2.fromScale(0.5, 0.5)
+        TitleHolder.Size = LeftTitle and UDim2.new(1, -260, 1, 0) or UDim2.new(1, -400, 1, 0)
+        TitleList.FillDirection = LeftTitle and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical
+        TitleList.HorizontalAlignment = LeftTitle and Enum.HorizontalAlignment.Left or Enum.HorizontalAlignment.Center
+        TitleList.Padding = UDim.new(0, LeftTitle and 0 or 8)
+
+        if S.Titlebar.TrafficLights ~= false and Window.Lights then Window.Lights.Visible = true end
+        if Window.Lights then Window.Lights.Visible = S.Titlebar.TrafficLights ~= false end
+        if Window.Wordmark then Window.Wordmark.Visible = S.Titlebar.Icon ~= nil end
+
+        SidebarBtn.Visible = (not Bar) and S.Titlebar.SidebarButton ~= false
+
+        for _, Sec in Window.Sections do
+            if Sec.Head then Sec.Head.Visible = not Bar end
+        end
+        for _, T in Library.TabList do
+            if T.Window == Window and T.ApplySkin then pcall(T.ApplySkin, T) end
+        end
+    end
+
     function Window:SetTabTitleVisible(V)
         V = V ~= false
         Window.TabTitleVisible = V
         Header.Visible = V
-        Pages.Position = UDim2.fromOffset(0, V and 54 or 0)
-        Pages.Size = UDim2.new(1, 0, 1, V and -54 or 0)
+        Pages.Position = UDim2.fromOffset(0, V and HeaderH or 0)
+        Pages.Size = UDim2.new(1, 0, 1, V and -HeaderH or 0)
     end
     Window.TabTitleVisible = WindowInfo.ShowTabTitle ~= false
     if not Window.TabTitleVisible then
@@ -6717,7 +7183,7 @@ function Library:CreateWindow(WindowInfo)
         NextOrder += 1
         local Section = { Name = Name, Tabs = {}, Collapsed = Opt.Collapsed == true, Collapsible = Opt.Collapsible ~= false }
 
-        local Head = New("TextButton", { Size = UDim2.new(1, 0, 0, 26), LayoutOrder = NextOrder, Parent = TabsList })
+        local Head = New("TextButton", { Size = UDim2.new(1, 0, 0, 26), LayoutOrder = NextOrder, Visible = not SkinBar, Parent = TabsList })
         local Lbl = New("TextLabel", {
             Position = UDim2.fromOffset(10, 4), Size = UDim2.new(1, -34, 1, -6), Text = tostring(Name):upper(), TextSize = 10, FontFace = "FontBold",
             TextColor3 = "SubText", TextXAlignment = Enum.TextXAlignment.Left, Parent = Head,
@@ -6742,6 +7208,7 @@ function Library:CreateWindow(WindowInfo)
             Head.MouseButton1Click:Connect(function() Section:Toggle() end)
         end
 
+        Section.Head, Section.Arrow = Head, Arrow
         CurrentSection = Section
         table.insert(Window.Sections, Section)
         return Section
@@ -6758,15 +7225,44 @@ function Library:CreateWindow(WindowInfo)
         Name = Name or "Tab"
 
         NextOrder += 1
-        local Btn = New("TextButton", { BackgroundColor3 = "ControlHover", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 30), LayoutOrder = NextOrder, Parent = TabsList })
+        local TabSkin = Library:SkinTabs()
+        local BarMode = TabSkin.Style == "Bar"
+        local BarTabWidth = 0
+        if BarMode then
+            -- equal segments across the bar, split by separator rules
+            BarTabWidth = math.max(70, math.floor((WindowInfo.Size.X.Offset - (SkinBar and 0 or SidebarWidth) - 1) / math.max(NextOrder, 1)))
+        end
+
+        local Btn = New("TextButton", {
+            BackgroundColor3 = "ControlHover", BackgroundTransparency = 1, LayoutOrder = NextOrder, Parent = TabsList,
+            Size = BarMode and UDim2.new(0, BarTabWidth, 1, 0) or UDim2.new(1, 0, 0, TabSkin.Height or 30),
+        })
         Corner(Btn, 7)
+        if BarMode then Flex(Btn) end
         local Icon = Library:GetCustomIcon(IconName)
         local IconImg
         if Icon then
-            IconImg = New("ImageLabel", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 9, 0.5, 0), Size = UDim2.fromOffset(16, 16), ImageColor3 = Icon.Custom and "AccentText" or "Accent", Parent = Btn })
+            IconImg = New("ImageLabel", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 9, 0.5, 0), Size = UDim2.fromOffset(16, 16), ImageColor3 = Icon.Custom and "AccentText" or "Accent", Visible = TabSkin.Icons ~= false, Parent = Btn })
             Library:ApplyIcon(IconImg, Icon)
         end
-        local BtnLabel = New("TextLabel", { Position = UDim2.fromOffset(Icon and 34 or 12, 0), Size = UDim2.new(1, Icon and -40 or -16, 1, 0), Text = Name, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Btn })
+        local BtnLabel = New("TextLabel", {
+            Position = UDim2.fromOffset(Icon and 34 or 12, 0), Size = UDim2.new(1, Icon and -40 or -16, 1, 0),
+            Text = Name, TextXAlignment = BarMode and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd, TextColor3 = "SubText", Parent = Btn,
+        })
+        local BarLine
+        if BarMode and TabSkin.ActiveStyle == "Underline" then
+            BarLine = New("Frame", {
+                BackgroundColor3 = "Accent", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1),
+                Size = UDim2.new(1, -20, 0, 2), Visible = false, Parent = Btn,
+            })
+        end
+        if BarMode and TabSkin.Separator then
+            New("Frame", {
+                BackgroundColor3 = "Outline", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0),
+                Size = UDim2.new(0, 1, 0.58, 0), Parent = Btn,
+            })
+        end
 
         local Container = New("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), Visible = false, Parent = Pages })
 
@@ -6784,7 +7280,7 @@ function Library:CreateWindow(WindowInfo)
         local Section = CurrentSection
         local Tab = {
             Name = Name, Icon = IconName, Section = Section, Description = Description, Button = Btn, Container = Container, Sides = { SideLeft, SideRight },
-            Groupboxes = {}, Tabboxes = {}, TabVisible = true, Window = Window,
+            Groupboxes = {}, Tabboxes = {}, TabVisible = true, Window = Window, BarLine = BarLine,
         }
 
         -- warning / info banner at the top of the page (Obsidian: Tab:UpdateWarningBox)
@@ -6980,17 +7476,23 @@ function Library:CreateWindow(WindowInfo)
 
         function Tab:RefreshStyle(Hovering)
             local Sel = Library.ActiveTab == Tab
+            local T = Library:SkinTabs()
+            local Underline = T.ActiveStyle == "Underline"
+            if Tab.BarLine then Tab.BarLine.Visible = Sel end
+
             if Sel then
-                Tween(Btn, { BackgroundColor3 = Library.Scheme.Accent, BackgroundTransparency = 0 })
-                Bind(Btn, "BackgroundColor3", "Accent")
-                BtnLabel.TextColor3 = Library.Scheme.AccentText
-                Bind(BtnLabel, "TextColor3", "AccentText")
-                if IconImg then IconImg.ImageColor3 = Library.Scheme.AccentText; Bind(IconImg, "ImageColor3", "AccentText") end
+                local Key = Underline and "Titlebar" or T.ActiveStyle == "Line" and "Titlebar" or "Accent"
+                Tween(Btn, { BackgroundColor3 = Library.Scheme[Key], BackgroundTransparency = Underline and 1 or 0 })
+                Bind(Btn, "BackgroundColor3", Key)
+                local TextKey = Underline and "Accent" or (T.ActiveStyle == "Line" and "Text" or "AccentText")
+                BtnLabel.TextColor3 = Library.Scheme[TextKey]
+                Bind(BtnLabel, "TextColor3", TextKey)
+                if IconImg then IconImg.ImageColor3 = Library.Scheme[TextKey]; Bind(IconImg, "ImageColor3", TextKey) end
             else
-                Tween(Btn, { BackgroundColor3 = Library.Scheme.ControlHover, BackgroundTransparency = Hovering and 0.45 or 1 })
+                Tween(Btn, { BackgroundColor3 = Library.Scheme.ControlHover, BackgroundTransparency = (Underline or true) and (Hovering and 0.6 or 1) })
                 Bind(Btn, "BackgroundColor3", "ControlHover")
-                BtnLabel.TextColor3 = Library.Scheme.Text
-                Bind(BtnLabel, "TextColor3", "Text")
+                BtnLabel.TextColor3 = Hovering and Library.Scheme.Text or Library.Scheme.SubText
+                Bind(BtnLabel, "TextColor3", Hovering and "Text" or "SubText")
                 if IconImg then
                     local K = Icon.Custom and "AccentText" or "Accent"
                     IconImg.ImageColor3 = Library.Scheme[K]; Bind(IconImg, "ImageColor3", K)
@@ -7025,6 +7527,31 @@ function Library:CreateWindow(WindowInfo)
 
         function Tab:RefreshButton()
             Btn.Visible = Tab.TabVisible ~= false and not (Tab.Section ~= nil and Tab.Section.Collapsed)
+        end
+
+        -- Restyles an existing tab button for the active skin (called by Library:SetSkin)
+        function Tab:ApplySkin()
+            local T = Library:SkinTabs()
+            local Bar = T.Style == "Bar"
+            if Bar and Window.Root then
+                BarTabWidth = math.max(70, math.floor((Window.Root.Size.X.Offset / math.max(Library.DPIScale, 0.01) - (SkinBar and 0 or SidebarWidth)) / math.max(NextOrder, 1)))
+            end
+            Btn.Size = Bar and UDim2.new(0, BarTabWidth, 1, 0) or UDim2.new(1, 0, 0, T.Height or 30)
+            Flex(Btn)
+            BtnLabel.Size = if Icon then UDim2.new(1, -40, 1, 0) else UDim2.new(1, -16, 1, 0)
+            BtnLabel.Position = UDim2.fromOffset(Icon and 34 or 12, 0)
+            BtnLabel.TextXAlignment = Bar and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
+            if IconImg then IconImg.Visible = T.Icons ~= false end
+            Tab:RefreshStyle()
+            if Bar and not Tab.BarLine then
+                Tab.BarLine = New("Frame", {
+                    BackgroundColor3 = "Accent", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1),
+                    Size = UDim2.new(1, -20, 0, 2), Visible = Library.ActiveTab == Tab, Parent = Btn,
+                })
+            elseif Tab.BarLine and not Bar then
+                Tab.BarLine:Destroy()
+                Tab.BarLine = nil
+            end
         end
 
         function Tab:SetVisible(V)
@@ -7125,25 +7652,48 @@ function Library:CreateWindow(WindowInfo)
             Grad(Card, Two("Card", 0.035, -0.015), 90)
             List(Card, 0)
 
-            local Head = New("TextButton", { Size = UDim2.new(1, 0, 0, 36), LayoutOrder = 1, Parent = Card })
+            local BoxSkin = Library:SkinGroupbox()
+            local Head = New("TextButton", { Size = UDim2.new(1, 0, 0, BoxSkin.HeaderHeight or 36), LayoutOrder = 1, Parent = Card })
             local BoxIcon = Library:GetCustomIcon(Info.IconName)
+            local ShowBoxIcon = BoxSkin.Icon ~= false
+            local HeaderIcon
             if BoxIcon then
-                local Img = New("ImageLabel", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(16, 16), ImageColor3 = BoxIcon.Custom and "AccentText" or "Accent", Parent = Head })
-                Library:ApplyIcon(Img, BoxIcon)
+                HeaderIcon = New("ImageLabel", {
+                    AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(16, 16),
+                    ImageColor3 = BoxIcon.Custom and "AccentText" or "Accent", Visible = ShowBoxIcon, Parent = Head,
+                })
+                Library:ApplyIcon(HeaderIcon, BoxIcon)
             end
-            New("TextLabel", { Position = UDim2.fromOffset(BoxIcon and 36 or 14, 0), Size = UDim2.new(1, -(BoxIcon and 60 or 40), 1, 0), Text = Info.Name, FontFace = "FontBold", TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Head })
+            local HeaderText = New("TextLabel", {
+                Position = UDim2.fromOffset(BoxIcon and ShowBoxIcon and 36 or 14, 0), Size = UDim2.new(1, -(BoxIcon and ShowBoxIcon and 60 or 40), 1, 0),
+                Text = Info.Name, FontFace = "FontBold", TextSize = BoxSkin.HeaderSize or 13,
+                TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Head,
+            })
             local Arrow = Glyph(Head, "chevron-down", "▾", { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.fromOffset(14, 14), Visible = Info.DisableCollapsing ~= true })
 
             local Line = New("Frame", { BackgroundColor3 = "Outline", BackgroundTransparency = 0.5, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 2, Parent = Card })
             local Body = New("Frame", { BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 3, Parent = Card })
-            List(Body, 10)
-            Pad(Body, 12, 12, 12, 12)
+            List(Body, BoxSkin.Gap or 10)
+            local BoxPad = BoxSkin.Pad or 12
+            local BodyPad = Pad(Body, BoxPad, BoxPad, BoxPad, BoxPad)
 
             local Groupbox = {
                 Type = "Groupbox", Name = Info.Name, Description = Info.Description, Visible = true, Collapsed = false,
                 BoxHolder = Card, Holder = Card, Container = Body, Tab = Tab, Elements = {}, DependencyBoxes = {}, Connections = {},
                 Pinned = false, HomeParent = CardParent, HomeOrder = CardOrder,
             }
+
+            -- Live skin change: header height, label size, icon visibility, body padding
+            function Groupbox:ApplySkin()
+                local BS = Library:SkinGroupbox()
+                Head.Size = UDim2.new(1, 0, 0, BS.HeaderHeight or 36)
+                HeaderText.TextSize = BS.HeaderSize or 13
+                if HeaderIcon then HeaderIcon.Visible = BS.Icon ~= false end
+                local P = BS.Pad or 12
+                BodyPad.PaddingTop, BodyPad.PaddingBottom = UDim.new(0, P), UDim.new(0, P)
+                BodyPad.PaddingLeft, BodyPad.PaddingRight = UDim.new(0, P), UDim.new(0, P)
+                Placeholder.Size = UDim2.new(1, 0, 0, BS.HeaderHeight or 36)
+            end
 
             local Placeholder = New("TextButton", {
                 BackgroundColor3 = Color3.new(1, 1, 1), Size = UDim2.new(1, 0, 0, 36),
@@ -7510,6 +8060,11 @@ function Library:CreateWindow(WindowInfo)
     --// Sheet dialog (macOS alert sheet attached to the window)
     function Window:AddDialog(Idx, Info)
         if typeof(Idx) == "table" and Info == nil then Info, Idx = Idx, nil end
+        -- unnamed dialogs still need a key; Library.Dialogues[nil] would throw
+        if Idx == nil then
+            Library.DialogCounter = (Library.DialogCounter or 0) + 1
+            Idx = "Dialog" .. Library.DialogCounter
+        end
         Info = Library:Validate(Info, Templates.Dialog)
 
         local Dim = New("TextButton", { BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 50, Parent = Main })
@@ -7632,6 +8187,15 @@ function Library:CreateWindow(WindowInfo)
         Stroke(MB, "Accent", 1.5, 0)
         Library:MakeDraggable(MB, MB)
         MB.MouseButton1Click:Connect(function() Window:Toggle() end)
+    end
+
+    -- Bar skins distribute tabs evenly; keep them even while the window is resized
+    if SkinBar then
+        function Window:RefreshTabBar()
+            for _, T in Library.TabList do
+                if T.Window == Window and T.ApplySkin then pcall(T.ApplySkin, T) end
+            end
+        end
     end
 
     Library.Window = Window
@@ -8007,6 +8571,16 @@ function Library:BuildInterfaceSection(Tab, Side)
             SyncSchemePickers()
         end,
     })
+    Appear:AddDropdown("EvergreenSkin", {
+        Text = "Skin", Values = Library:GetSkins(), Default = Library:GetSkin(),
+        Tooltip = "Skin sets the design; theme sets the colors",
+        Callback = function(V)
+            if V == nil or Library.SyncingSkin then return end
+            Library:SetSkin(V)
+            SyncSchemePickers()
+        end,
+    })
+
     local function SetIconPack(V)
         if V == nil then return end
         local Ok, Err = Library:SetIconProvider(V)
@@ -8046,8 +8620,13 @@ function Library:BuildInterfaceSection(Tab, Side)
         Library:ResetAccent()
         SyncAccentPicker()
     end }):AddButton({ Text = "Reset theme", Callback = function()
+        -- "Reset" also unpins the theme so the skin may suggest its own palette again
+        Library.ThemePinned = false
         Library:ResetAccent()
-        Library:SetTheme(Library.ThemeName or "Dark")
+        local SkinTheme = Library.Skin and Library.Skin.DefaultTheme
+        Library.ApplyingSkin = SkinTheme ~= nil
+        Library:SetTheme(SkinTheme or "Dark")
+        Library.ApplyingSkin = false
         SyncSchemePickers()
     end })
 
