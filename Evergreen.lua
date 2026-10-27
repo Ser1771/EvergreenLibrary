@@ -359,7 +359,13 @@ local Templates = {
 }
 
 --// Basic helpers \\--
+-- Global motion switch. Library:SetMotion(false) applies every animation instantly — handy for
+-- reduced-motion users, low-end devices, or screenshots/tests.
 local function Tween(Object, Props, Info)
+    if Library.Motion == false then
+        for K, V in Props do Object[K] = V end
+        return nil
+    end
     local T = TweenService:Create(Object, Info or Library.TweenInfo, Props)
     T:Play()
     return T
@@ -683,6 +689,15 @@ function Library:SetAccent(Color)
     Library.AccentOverride = Color
     Library.Scheme.Accent = Color
     if Library.Scheme.IsLight then Library.Scheme.SliderFill = Color end
+    -- keep the settings picker in step so a later callback can't drag the accent back
+    local P = Options and Options.EvergreenAccent
+    if P and typeof(P.SetValueRGB) == "function" and not Library.SyncingAccent then
+        if not (typeof(P.Value) == "Color3" and P.Value:ToHex() == Color:ToHex()) then
+            Library.SyncingAccent = true
+            pcall(P.SetValueRGB, P, Color)
+            Library.SyncingAccent = false
+        end
+    end
     Library:RefreshTheme()
 end
 
@@ -718,7 +733,7 @@ local DefaultSkin = {
     Flat = false,        -- drop decorative panel gradients
 
     Titlebar = { Height = 40, Align = "Center", Icon = nil, TrafficLights = true, SidebarButton = true, UppercaseTitle = false },
-    Tabs = { Style = "Sidebar", Height = 30, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false },
+    Tabs = { Style = "Sidebar", Height = 30, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false, Label = "Text", HoverTransparency = 0.45 },
     Content = { ShowHeader = true, HeaderHeight = 54, PadX = 16 },
     Groupbox = { HeaderHeight = 36, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12 },
     Toggle = { Style = "Switch", BoxSize = 18, CheckGlyph = true },
@@ -744,7 +759,7 @@ local VitalitySkin = {
 
     Titlebar = { Height = 42, Align = "Left", Icon = "activity", TrafficLights = false, SidebarButton = true, UppercaseTitle = false },
     -- Navigation stays in the usual sidebar: squared rows, flat crimson fill on the active tab
-    Tabs = { Style = "Sidebar", Height = 32, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false, Uppercase = false },
+    Tabs = { Style = "Sidebar", Height = 32, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false, Uppercase = false, Label = "SubText", HoverTransparency = 0.62, Rail = true },
     Content = { ShowHeader = false, HeaderHeight = 0, PadX = 14 },
     Groupbox = { HeaderHeight = 34, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12 },
     Toggle = { Style = "Box", BoxSize = 16, CheckGlyph = false },
@@ -838,6 +853,28 @@ function Library:ApplySkinGeometry()
     end
 end
 
+-- Library:GetOption("aimbot") works for every flagged element kind (toggles, sliders, dropdowns,
+-- listboxes, keybinds, colour pickers), so scripts do not have to remember which table holds what.
+-- Library:SetMotion(false) -- disable every transition (instant state changes)
+function Library:SetMotion(Enabled: boolean?)
+    -- remember the library's own timings the first time so they can be restored exactly
+    Library.BaseTweens = Library.BaseTweens or { TweenInfo = Library.TweenInfo, SlowTween = Library.SlowTween }
+    Library.Motion = Enabled ~= false
+    if Library.Motion then
+        Library.TweenInfo, Library.SlowTween = Library.BaseTweens.TweenInfo, Library.BaseTweens.SlowTween
+    else
+        Library.TweenInfo = TweenInfo.new(0, Enum.EasingStyle.Linear)
+        Library.SlowTween = TweenInfo.new(0, Enum.EasingStyle.Linear)
+    end
+    return Library.Motion
+end
+
+function Library:GetOption(Id: string)
+    local E = Toggles[Id] or Options[Id]
+    if typeof(E) == "table" and not E.Destroyed then return E end
+    return nil
+end
+
 function Library:GetSkin(): string
     return Library.SkinName or "Default"
 end
@@ -871,18 +908,44 @@ function Library:SetSkin(Name, Silent)
         Library.Scheme.FontBold = defaultFonts.FontBold
     end
 
-    --// Theme suggested by the skin (only when the user has not pinned one)
-    if not Silent and Spec.DefaultTheme and Skins[Name] and not Library.ThemePinned then
+    --// Theme hand-off
+    -- A skin may suggest a palette. The palette it replaces is remembered, so switching back to a
+    -- skin without one (e.g. Default) restores what the user had instead of stranding them on the
+    -- skin's colors. An explicitly chosen theme always wins and is never swapped out.
+    local Suggested = (not Silent) and Skins[Name] and not Library.ThemePinned and Spec.DefaultTheme
+    if Suggested then
+        if Library.SkinThemeApplied == nil and Library.ThemeName then
+            Library.PreSkinTheme = Library.ThemeName
+        end
         Library.ApplyingSkin = true
-        Library:SetTheme(Spec.DefaultTheme)
+        Library:SetTheme(Suggested)
         Library.ApplyingSkin = false
+        Library.SkinThemeApplied = Suggested
+        Library.Scheme.Font = SkinFont(FontFace, defaultFonts.Font)
+        Library.Scheme.FontBold = SkinFont(BoldFace, defaultFonts.FontBold)
+    elseif not Library.ThemePinned and Library.SkinThemeApplied ~= nil
+        and Library.ThemeName == Library.SkinThemeApplied then
+        -- we are on a palette a previous skin imposed: put the user's own back
+        local Restore = Library.PreSkinTheme or "Dark"
+        Library.ApplyingSkin = true
+        Library:SetTheme(Restore)
+        Library.ApplyingSkin = false
+        Library.SkinThemeApplied = nil
+        Library.PreSkinTheme = nil
         Library.Scheme.Font = SkinFont(FontFace, defaultFonts.Font)
         Library.Scheme.FontBold = SkinFont(BoldFace, defaultFonts.FontBold)
     end
 
+    -- a theme picked by hand after a skin suggested one detaches the hand-off
+    if Library.ThemePinned then
+        Library.SkinThemeApplied = nil
+        Library.PreSkinTheme = nil
+    end
+
     Library:ApplySkinGeometry()
-    Library:UpdateColorsUsingRegistry()
-    Library:UpdateGradients()
+    -- full theme refresh, not just the registry: gradients and ThemeHooks (sidebar toggle, dock,
+    -- keybind pills …) all repaint from the new palette instead of keeping the old skin's colors
+    Library:RefreshTheme()
     Library:ApplySkinScrollbars()
 
     if Library.Window and Library.Window.ApplySkin then pcall(Library.Window.ApplySkin, Library.Window) end
@@ -6620,8 +6683,9 @@ function Library:CreateWindow(WindowInfo)
     local Minimized, Maximized = false, false
     local PreMinSize, PreMaxState
 
-    -- traffic lights
-    if WindowInfo.ShowTrafficLights and Skin.Titlebar.TrafficLights ~= false then
+    -- traffic lights: always built when the window allows them; the skin only hides them, so a
+    -- switch back to a skin that wants them brings them straight back
+    if WindowInfo.ShowTrafficLights then
         local Lights = New("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 14, 0.5, 0), Size = UDim2.fromOffset(64, 16), Parent = TitleBar })
         Window.Lights = Lights
         List(Lights, 8, Enum.FillDirection.Horizontal, nil, Enum.VerticalAlignment.Center)
@@ -6647,12 +6711,15 @@ function Library:CreateWindow(WindowInfo)
         MakeLight(Color3.fromRGB(40, 200, 64), "+", function() Window:SetMaximized(not Maximized) end)
     end
 
+    if Window.Lights then Window.Lights.Visible = Skin.Titlebar.TrafficLights ~= false end
+
     -- title: centered by default, left-aligned (with an optional wordmark icon) for bar skins
     local LeftTitle = Skin.Titlebar.Align == "Left"
+    local BuildLightsOn = Skin.Titlebar.TrafficLights ~= false and WindowInfo.ShowTrafficLights ~= false
     local TitleHolder = New("Frame", {
         BackgroundTransparency = 1,
         AnchorPoint = LeftTitle and Vector2.new(0, 0.5) or Vector2.new(0.5, 0.5),
-        Position = LeftTitle and UDim2.new(0, 16, 0.5, 0) or UDim2.fromScale(0.5, 0.5),
+        Position = LeftTitle and UDim2.new(0, BuildLightsOn and 46 or 16, 0.5, 0) or UDim2.fromScale(0.5, 0.5),
         Size = LeftTitle and UDim2.new(1, -260, 1, 0) or UDim2.new(1, -400, 1, 0), Parent = TitleBar,
     })
     local TitleList = List(TitleHolder, LeftTitle and 8 or 0,
@@ -6660,16 +6727,29 @@ function Library:CreateWindow(WindowInfo)
         LeftTitle and Enum.HorizontalAlignment.Left or Enum.HorizontalAlignment.Center,
         Enum.VerticalAlignment.Center)
 
+    -- The wordmark lives in a holder that always exists, so a skin switched in later can introduce
+    -- (or drop) its icon without the window having to be rebuilt.
+    local WordmarkHolder = New("Frame", { BackgroundTransparency = 1, Size = UDim2.fromOffset(16, 20), LayoutOrder = 0, Visible = false, Parent = TitleHolder })
     local Wordmark
-    local WordmarkIcon = Skin.Titlebar.Icon
-    if WordmarkIcon then
-        Wordmark = Glyph(TitleHolder, WordmarkIcon, "✳", {
-            AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromOffset(0, 0),
+    local function SetWordmark(Name)
+        for _, C in WordmarkHolder:GetChildren() do
+            if C:IsA("GuiObject") then C:Destroy() end
+        end
+        Wordmark = nil
+        if typeof(Name) ~= "string" or Name == "" then
+            WordmarkHolder.Visible = false
+            Window.Wordmark = nil
+            return
+        end
+        Wordmark = Glyph(WordmarkHolder, Name, "✳", {
+            AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromScale(0, 0.5),
             Size = UDim2.fromOffset(16, 16), Color = "Accent", LayoutOrder = 0,
         })
+        WordmarkHolder.Visible = true
+        Window.Wordmark = Wordmark
     end
-
-    Window.Wordmark = Wordmark
+    SetWordmark(Skin.Titlebar.Icon)
+    Window.SetWordmark = SetWordmark
 
     local TitleRich = Library:RenderRich(TitleHolder, WindowInfo.Title, {
         Size = 14, Bold = true, Align = LeftTitle and "Left" or "Center", LayoutOrder = 1,
@@ -6920,7 +7000,7 @@ function Library:CreateWindow(WindowInfo)
     local Content = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(SidebarX, ChromeH), Size = UDim2.new(1, -SidebarX, 1, -ChromeH), ClipsDescendants = true, Parent = Main })
     local Header = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, HeaderH), Visible = HeaderH > 0, Parent = Content })
     List(Header, 1, nil, nil, Enum.VerticalAlignment.Center)
-    Pad(Header, 0, Skin.Content.PadX or 16, 0, (Skin.Content.PadX or 16) + 4)
+    local HeaderPad = Pad(Header, 0, Skin.Content.PadX or 16, 0, (Skin.Content.PadX or 16) + 4)
     local PageTitle = New("TextLabel", { Size = UDim2.new(1, 0, 0, 24), Text = "", FontFace = "FontBold", TextSize = 20, TextXAlignment = Enum.TextXAlignment.Left, Parent = Header })
     local PageDesc = New("TextLabel", { Size = UDim2.new(1, 0, 0, 14), Text = "", TextSize = 12, TextColor3 = "SubText", TextXAlignment = Enum.TextXAlignment.Left, Visible = false, Parent = Header })
     local Pages = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, HeaderH), Size = UDim2.new(1, 0, 1, -HeaderH), Parent = Content })
@@ -7037,6 +7117,9 @@ function Library:CreateWindow(WindowInfo)
         Content.Size = UDim2.new(1, -SidebarX, 1, -ChromeH)
         Header.Size = UDim2.new(1, 0, 0, HeaderH)
         Header.Visible = HeaderH > 0 and Window.TabTitleVisible ~= false
+        local PadX = S.Content.PadX or 16
+        HeaderPad.PaddingRight = UDim.new(0, PadX)
+        HeaderPad.PaddingLeft = UDim.new(0, PadX + 4)
         Pages.Position = UDim2.fromOffset(0, Window.TabTitleVisible ~= false and HeaderH or 0)
         Pages.Size = UDim2.new(1, 0, 1, -(Window.TabTitleVisible ~= false and HeaderH or 0))
 
@@ -7059,11 +7142,13 @@ function Library:CreateWindow(WindowInfo)
         TitleHolder.Size = LeftTitle and UDim2.new(1, -260, 1, 0) or UDim2.new(1, -400, 1, 0)
         TitleList.FillDirection = LeftTitle and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical
         TitleList.HorizontalAlignment = LeftTitle and Enum.HorizontalAlignment.Left or Enum.HorizontalAlignment.Center
-        TitleList.Padding = UDim.new(0, LeftTitle and 0 or 8)
+        TitleList.Padding = UDim.new(0, LeftTitle and 8 or 0) -- matches the build-time list
 
-        if S.Titlebar.TrafficLights ~= false and Window.Lights then Window.Lights.Visible = true end
-        if Window.Lights then Window.Lights.Visible = S.Titlebar.TrafficLights ~= false end
-        if Window.Wordmark then Window.Wordmark.Visible = S.Titlebar.Icon ~= nil end
+        if Window.Lights then Window.Lights.Visible = S.Titlebar.TrafficLights ~= false and WindowInfo.ShowTrafficLights ~= false end
+        if Window.SetWordmark then Window.SetWordmark(S.Titlebar.Icon) end
+        -- left-aligned skins only indent past the traffic lights when they actually exist
+        local LightsOn = S.Titlebar.TrafficLights ~= false and WindowInfo.ShowTrafficLights ~= false
+        TitleHolder.Position = LeftTitle and UDim2.new(0, LightsOn and 46 or 16, 0.5, 0) or UDim2.fromScale(0.5, 0.5)
 
         SidebarBtn.Visible = (not Bar) and S.Titlebar.SidebarButton ~= false
 
@@ -7250,6 +7335,18 @@ function Library:CreateWindow(WindowInfo)
             Text = Name, TextXAlignment = BarMode and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
             TextTruncate = Enum.TextTruncate.AtEnd, TextColor3 = "SubText", Parent = Btn,
         })
+        -- optional left accent rail on sidebar rows (Vitality: a 2px crimson sliver on hover/active)
+        local RailBar
+        if not BarMode then
+            -- always built (one cheap frame) so a skin swapped in later can turn it on
+            RailBar = New("Frame", {
+                BackgroundColor3 = "Accent", BackgroundTransparency = 1, BorderSizePixel = 0,
+                AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0),
+                Size = UDim2.new(0, 2, 0.62, 0), Visible = TabSkin.Rail == true, Parent = Btn,
+            })
+            Corner(RailBar, 99)
+        end
+
         local BarLine
         if BarMode and TabSkin.ActiveStyle == "Underline" then
             BarLine = New("Frame", {
@@ -7479,6 +7576,10 @@ function Library:CreateWindow(WindowInfo)
             local T = Library:SkinTabs()
             local Underline = T.ActiveStyle == "Underline"
             if Tab.BarLine then Tab.BarLine.Visible = Sel end
+            if RailBar then
+                -- the rail is a hover affordance; on the active row the fill already does the job
+                Tween(RailBar, { BackgroundTransparency = (Hovering and not Sel) and 0.15 or 1 })
+            end
 
             if Sel then
                 local Key = Underline and "Titlebar" or T.ActiveStyle == "Line" and "Titlebar" or "Accent"
@@ -7489,10 +7590,12 @@ function Library:CreateWindow(WindowInfo)
                 Bind(BtnLabel, "TextColor3", TextKey)
                 if IconImg then IconImg.ImageColor3 = Library.Scheme[TextKey]; Bind(IconImg, "ImageColor3", TextKey) end
             else
-                Tween(Btn, { BackgroundColor3 = Library.Scheme.ControlHover, BackgroundTransparency = (Underline or true) and (Hovering and 0.6 or 1) })
+                local Hover = T.HoverTransparency or 0.45
+                Tween(Btn, { BackgroundColor3 = Library.Scheme.ControlHover, BackgroundTransparency = (Underline or true) and (Hovering and Hover or 1) })
                 Bind(Btn, "BackgroundColor3", "ControlHover")
-                BtnLabel.TextColor3 = Hovering and Library.Scheme.Text or Library.Scheme.SubText
-                Bind(BtnLabel, "TextColor3", Hovering and "Text" or "SubText")
+                local LabelKey = T.Label or "Text"
+                BtnLabel.TextColor3 = Hovering and Library.Scheme.Text or Library.Scheme[LabelKey]
+                Bind(BtnLabel, "TextColor3", Hovering and "Text" or LabelKey)
                 if IconImg then
                     local K = Icon.Custom and "AccentText" or "Accent"
                     IconImg.ImageColor3 = Library.Scheme[K]; Bind(IconImg, "ImageColor3", K)
@@ -7537,11 +7640,19 @@ function Library:CreateWindow(WindowInfo)
                 BarTabWidth = math.max(70, math.floor((Window.Root.Size.X.Offset / math.max(Library.DPIScale, 0.01) - (SkinBar and 0 or SidebarWidth)) / math.max(NextOrder, 1)))
             end
             Btn.Size = Bar and UDim2.new(0, BarTabWidth, 1, 0) or UDim2.new(1, 0, 0, T.Height or 30)
-            Flex(Btn)
+            -- Only bar-style tabs flex across the strip. A UIFlexItem left on a sidebar row makes the
+            -- list stretch the row to fill the sidebar (rows ballooned after any skin swap).
+            if Bar then
+                Flex(Btn)
+            else
+                local Stray = Btn:FindFirstChildOfClass("UIFlexItem")
+                if Stray then Stray:Destroy() end
+            end
             BtnLabel.Size = if Icon then UDim2.new(1, -40, 1, 0) else UDim2.new(1, -16, 1, 0)
             BtnLabel.Position = UDim2.fromOffset(Icon and 34 or 12, 0)
             BtnLabel.TextXAlignment = Bar and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
             if IconImg then IconImg.Visible = T.Icons ~= false end
+            if RailBar then RailBar.Visible = (not Bar) and T.Rail == true end
             Tab:RefreshStyle()
             if Bar and not Tab.BarLine then
                 Tab.BarLine = New("Frame", {
@@ -7551,6 +7662,14 @@ function Library:CreateWindow(WindowInfo)
             elseif Tab.BarLine and not Bar then
                 Tab.BarLine:Destroy()
                 Tab.BarLine = nil
+            end
+            -- groupbox headers carry their own geometry (height / title size / padding), so they have
+            -- to be restyled explicitly or a skin swap leaves the old header metrics behind
+            for _, Box in Tab.Groupboxes do
+                if typeof(Box) == "table" and not Box.Destroyed and Box.ApplySkin then pcall(Box.ApplySkin, Box) end
+            end
+            for _, TB in Tab.Tabboxes do
+                if typeof(TB) == "table" and TB.ApplySkin then pcall(TB.ApplySkin, TB) end
             end
         end
 
@@ -8352,6 +8471,11 @@ end
 
 function SaveManager:Serialize()
     local Data = { toggles = {}, options = {} }
+    -- the look travels with the config: restoring a preset restores its skin, palette and accent
+    Data.skin = Library.SkinName
+    Data.theme = Library.ThemeName
+    Data.themePinned = Library.ThemePinned == true
+    if Library.AccentOverride then Data.accent = Library.AccentOverride:ToHex() end
     for Idx, E in Toggles do
         if not Skip(Idx) then Data.toggles[Idx] = { value = E.Value } end
     end
@@ -8383,6 +8507,25 @@ function SaveManager:Serialize()
 end
 
 function SaveManager:Apply(Data)
+    if typeof(Data.skin) == "string" and Library.Skins[Data.skin] then
+        Library:SetSkin(Data.skin, true)
+    end
+    if typeof(Data.theme) == "string" and Themes[Data.theme] then
+        Library:SetTheme(Data.theme)
+        -- SetTheme pins by default; put the saved pin state back afterwards
+        Library.ThemePinned = Data.themePinned == true
+        local Skin = Library.Skin
+        if not Library.ThemePinned and Skin and Skin.DefaultTheme == Data.theme then
+            Library.SkinThemeApplied = Data.theme
+        else
+            Library.SkinThemeApplied = nil
+        end
+        Library.PreSkinTheme = nil
+    end
+    if typeof(Data.accent) == "string" then
+        local Ok, C = pcall(Color3.fromHex, Data.accent)
+        if Ok and C then Library:SetAccent(C) end
+    end
     for Idx, D in Data.toggles or {} do
         local E = Toggles[Idx]
         if E and not Skip(Idx) then pcall(E.SetValue, E, D.value) end
@@ -8541,6 +8684,10 @@ function Library:BuildInterfaceSection(Tab, Side)
         end
     end
     local ApplyAccent = MakeThrottle(0.08, function(C)
+        -- A throttled callback can arrive after a programmatic SetAccent has already moved on.
+        -- If the picker no longer shows this colour the value is stale, so drop it.
+        local P = Options.EvergreenAccent
+        if P and typeof(P.Value) == "Color3" and P.Value:ToHex() ~= C:ToHex() then return end
         if C:ToHex() ~= Library.Scheme.Accent:ToHex() then Library:SetAccent(C) end
     end)
     local function SyncAccentPicker()
