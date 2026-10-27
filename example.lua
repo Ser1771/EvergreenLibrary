@@ -5,6 +5,11 @@ local LocalPlayer = Players.LocalPlayer
 
 Library.SaveManager:SetFolder("EvergreenExample")
 Library:SetNotifySide("Right")
+Library:RegisterTheme("Sunset", {
+    Accent = Color3.fromRGB(255, 110, 70),
+    AccentText = Color3.fromRGB(45, 15, 5),
+    SliderFill = Color3.fromRGB(255, 130, 90),
+})
 
 local Loader = Library:CreateLoading({
     Title = "Evergreen",
@@ -15,25 +20,24 @@ local Loader = Library:CreateLoading({
 Loader:SetCurrentStep(1)
 
 local Window = Library:CreateWindow({
-    Title = "Evergreen",
+    Title = "<Animated:glow>Evergreen</Animated>",
     Subtitle = "Full Example",
-    Footer = "v1.0",
+    Footer = "<Accent>v1.0",
     Size = UDim2.fromOffset(860, 560),
     MinSize = Vector2.new(640, 420),
     Center = true,
     AutoShow = true,
+    Resizable = true,
     Theme = "Dark",
-    Accent = nil,
     CornerRadius = 12,
     SidebarWidth = 195,
     SearchStyle = 1,
     ToggleKeybind = Enum.KeyCode.RightControl,
     ShowTrafficLights = true,
     ShowUserChip = true,
-    Dock = true,
+    Dock = { Scale = 0.8, Position = "Top", Draggable = true },
     Glass = false,
     Blur = false,
-    Wallpaper = nil,
     Transparency = 0,
     CloseUnloads = false,
     OnClose = function() Library:Notify({ Title = "Evergreen", Description = "Window hidden (RightControl to reopen)", Time = 3 }) end,
@@ -55,7 +59,6 @@ local Combat = MainTab:AddLeftGroupbox("Combat", "sword")
 Combat:AddToggle("Fly", {
     Text = "Fly",
     Default = false,
-    Risky = false,
     Callback = function(On) print("[example] fly =", On) end,
 }):AddKeyPicker("Fly#key", {
     Default = "F",
@@ -117,6 +120,16 @@ Combat:AddInput("SearchBox", {
     ClearTextOnFocus = false,
 })
 
+local RowA = Combat:AddRowBox({ Cols = 2 }, function(Row)
+    Row:AddToggle("RowA1", { Text = "Quick swap", Default = true })
+    Row:AddDropdown("RowA2", { Text = "Mode", Values = { "Aggressive", "Passive", "Legit" }, Default = "Legit" })
+end)
+
+local Adv = Combat:AddNestedGroupbox("Advanced", { Collapsed = false })
+Adv:AddToggle("AutoStrafe", { Text = "Auto strafe", Default = false })
+Adv:AddSlider("StrafePower", { Text = "Strafe power", Min = 0, Max = 100, Default = 40, Rounding = 0, Suffix = "%" })
+Adv:AddDropdown("PriorityTarget", { Text = "Target priority", Values = { "Nearest", "Lowest HP", "Crosshair" }, Default = "Crosshair" })
+
 local Loadout = MainTab:AddRightGroupbox("Loadout", "target")
 
 local Weapon = Loadout:AddDropdown("Weapon", {
@@ -150,12 +163,41 @@ Loadout:AddDropdown("TeamColor", {
     Callback = function(v) print("[example] team =", v and v.Name) end,
 })
 
+Loadout:AddPriorityDropdown("DrawOrder", {
+    Text = "ESP draw order",
+    Extended = true,
+    Values = {
+        { Name = "Head glow", Priority = 1 },
+        { Name = "Bounding box", Priority = 2 },
+        { Name = "Name tags", Priority = 3 },
+        { Name = "Health bars", Priority = 4 },
+        { Name = "Chams", Priority = 5 },
+    },
+    Callback = function(v) print("[example] top of draw order:", v) end,
+})
+
+Loadout:AddPriorityDropdown("HudLayers", {
+    Text = "HUD layers (popup mode)",
+    Values = {
+        { Name = "Watermark", Priority = 1 },
+        { Name = "Keybind list", Priority = 2 },
+        { Name = "Notifications", Priority = 3 },
+    },
+    Callback = function(v) print("[example] hud top layer:", v) end,
+})
+
+local RowB = Loadout:AddRowBox({ Cols = 3 }, function(Row)
+    Row:AddSlider("RowB1", { Text = "Delay", Min = 0, Max = 300, Default = 120, Rounding = 0, Suffix = "ms" })
+    Row:AddButton("RowB2", { Text = "Apply", Func = function() Library:Notify("Row applied") end })
+    Row:AddCircleButton("RowB3", { Icon = "sparkles", Func = function() Library:Notify("Circle in a row!") end })
+end)
+
 Loadout:AddList("Hotkeys", {
     Text = "Active macros",
     Values = { "Speedrun", "Flick", "Bunny hop" },
     Multi = true,
     Height = 110,
-    Callback = function(v) print("[example] macros changed") end,
+    Callback = function() print("[example] macros changed") end,
 })
 
 Loadout:AddDivider()
@@ -176,6 +218,29 @@ Loadout:AddButton("PrimaryAction", {
 Loadout:AddButton("SecondaryAction", {
     Text = "Secondary",
     Func = function() Library:Notify("Secondary clicked") end,
+})
+
+Loadout:AddCircleButton("CircleRefresh", {
+    Icon = "refresh-cw",
+    Text = "Refresh",
+    Size = 34,
+    Func = function() Library:Notify({ Title = "Loadout", Description = "Refreshed", Time = 2 }) end,
+})
+
+Loadout:AddCircleButton("CircleStar", {
+    Icon = "star",
+    Text = "Favorite",
+    Primary = true,
+    Size = 34,
+    Func = function() Library:Notify({ Title = "Loadout", Description = "Favorited", Time = 2 }) end,
+})
+
+Loadout:AddCircleButton("CircleTrash", {
+    Icon = "trash-2",
+    Text = "Delete",
+    Risky = true,
+    Size = 34,
+    Func = function() Library:Notify({ Title = "Loadout", Description = "Deleted", Time = 2 }) end,
 })
 
 task.delay(0, function() Loader:SetCurrentStep(3) end)
@@ -212,6 +277,15 @@ local Info = VisualTab:AddRightGroupbox("Info", "info")
 Info:AddTitle("Rich content demo")
 Info:AddParagraph("Paragraphs", "Supports titles and bodies. Use <b>bold</b>, <Accent>accent</Accent>, <Red>red</Red> and <Copyable>click-to-copy</Copyable> tags inside labels.")
 Info:AddLabel("<Rainbow>Rainbow</Rainbow>, <Pulse>pulse</Pulse> and <Typewriter>typewriter</Typewriter> animations work inline.")
+Info:AddLabel({
+    Text = "<Animated:neon>neon</Animated> <Animated:glow>glow</Animated> <Animated:pendulum>pendulum</Animated> <Animated:shimmer>shimmer</Animated> <Animated:swing>swing</Animated> <Animated:bounce>bounce</Animated> <Animated:sway>sway</Animated> <Animated:breathe>breathe</Animated> <Animated:spark>spark</Animated> <Animated:flame>flame</Animated> <Animated:heartbeat>heartbeat</Animated> <Animated:clock>clock</Animated> <Animated:cascade>cascade</Animated> <Animated:prism>prism</Animated> <Animated:zoom>zoom</Animated> <Animated:ripple>ripple</Animated> <Animated:electric>electric</Animated> <Animated:quantum>quantum</Animated> <Animated:caret>caret</Animated>",
+    DoesWrap = true,
+})
+
+local RowC = Info:AddRowBox(2, function(Row)
+    Row:AddCheckbox("RowC1", { Text = "Streamer mode", Default = false })
+    Row:AddSlider("RowC2", { Text = "Scale", Min = 50, Max = 150, Default = 100, Rounding = 0, Suffix = "%" })
+end)
 Info:AddCallout({ Type = "warning", Title = "Heads up", Text = "Dependency boxes hide their children until the parent matches." })
 Info:AddCallout({ Type = "success", Title = "Saved", Text = "Config auto-applies on load." })
 Info:AddDivider("Middle")
@@ -297,18 +371,81 @@ ConfirmDialog:AddToggle("ConfirmToggle", { Text = "I understand the consequences
 
 Actions:AddButton("OpenDialogBtn", { Text = "Open dialog", Func = function() ConfirmDialog:Show() end })
 
+Actions:AddButton("HoldWipe", {
+    Text = "Hold to wipe",
+    Hold = 3,
+    Risky = true,
+    Func = function()
+        Library:Notify({ Title = "Data", Description = "Hold completed", Time = 3 })
+    end,
+})
+
 Actions:AddButton("NotifyBtn", {
-    Text = "Notification + callbacks",
+    Text = "Notification (tap to stack)",
     Func = function()
         Library:Notify({
             Title = "Evergreen",
-            Description = "Click me, or wait for the timer.",
+            Description = "Same notify stacks with a counter.",
             Time = 5,
             Icon = "bell",
             OnClick = function() print("[example] notify clicked") end,
             OnDismiss = function(Reason) print("[example] notify dismissed:", Reason) end,
         })
     end,
+})
+
+local TitleFlip = false
+local RadFlip = false
+local Widths = { 120, 195, 240 }
+local WidthIdx = 2
+
+Actions:AddButton("TitleApiBtn", {
+    Text = "Cycle window text",
+    Func = function()
+        TitleFlip = not TitleFlip
+        Window:ChangeTitle(TitleFlip and "<Animated:wave>Evergreen</Animated>" or "<Animated:glow>Evergreen</Animated>")
+        Window:SetSubtitle("Edited at " .. os.date("%H:%M:%S"))
+        Window:SetFooter("<Accent>v1.0 <Sub>edited</Sub>")
+    end,
+})
+
+Actions:AddButton("WinLookBtn", {
+    Text = "Cycle corner radius",
+    Func = function()
+        RadFlip = not RadFlip
+        Window:SetCornerRadius(RadFlip and 8 or 14)
+    end,
+})
+
+Actions:AddButton("SideWBtn", {
+    Text = "Cycle sidebar width",
+    Func = function()
+        WidthIdx = WidthIdx % #Widths + 1
+        Window:SetSidebarWidth(Widths[WidthIdx])
+    end,
+})
+
+Actions:AddButton("JumpBtn", {
+    Text = "Jump to search result",
+    Func = function()
+        local Res = Library:SearchEntries("aim", 1)
+        if Res[1] then Library:JumpTo(Res[1]) end
+    end,
+})
+
+Actions:AddButton("PinBtn", {
+    Text = "Pin Combat groupbox",
+    Func = function() Combat:TogglePin() end,
+})
+
+Actions:AddButton("SidebarBtn", {
+    Text = "Toggle sidebar",
+    Func = function() Window:SetSidebarVisible(Window.SidebarVisible == false) end,
+})
+
+Actions:AddButton("TabTitleBtn", {
+    Text = "Toggle tab title",
+    Func = function() Window:SetTabTitleVisible(Window.TabTitleVisible == false) end,
 })
 
 Actions:AddButton("KeybindHudBtn", {
@@ -328,6 +465,9 @@ KeyTab:AddKeyBox(function(Key)
     Library:Notify({ Title = "Key captured", Description = tostring(Key), Time = 2 })
 end)
 
+KeyTab:AddLabel("<Animated:pulse>Type a key, then Submit.</Animated>")
+KeyTab:AddToggle("CaptureMode", { Text = "Keep capturing", Default = true })
+
 Window:AddSection("System")
 Library:BuildSettingsTab(Window, { Name = "Settings", Config = true })
 
@@ -346,9 +486,30 @@ if Dock then
         Icon = "message-square",
         Toggle = true,
         Default = false,
-        Callback = function(State) print("[example] dock toggle =", State) end,
+        Callback = function(State)
+            print("[example] dock toggle =", State)
+            MsgButton:SetBadge(State and "3" or nil)
+            Dock:SetButtonIcon("Messages", State and "mail-open" or "mail")
+        end,
     })
-    MsgButton:SetBadge("3")
+    Dock:AddButton({
+        Name = "Junk",
+        Icon = "circle-dashed",
+        Tooltip = "Removes itself (RemoveButton)",
+        Callback = function(_, Btn) Dock:RemoveButton(Btn) end,
+    })
+    Dock:AddButton({
+        Name = "Theme",
+        Icon = "palette",
+        Tooltip = "Cycle themes",
+        Callback = function()
+            local Names = { "Dark", "Mocha", "Nord", "Catppuccin", "Midnight", "Light" }
+            local Idx = (table.find(Names, Library.ThemeName) or 0) % #Names + 1
+            Library:SetTheme(Names[Idx])
+            Library:Notify({ Title = "Theme", Description = Names[Idx], Time = 2 })
+        end,
+    })
+    Dock.OnCollapseChanged = function(Collapsed) print("[example] dock collapsed =", Collapsed) end
 end
 
 local Pill = Library:AddDraggableLabel("Evergreen")
