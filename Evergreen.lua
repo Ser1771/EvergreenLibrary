@@ -291,7 +291,11 @@ local Themes = {
 local Labels, Buttons, Toggles, Options = {}, {}, {}, {}
 
 local Library = {
-    Version = "1.0.0",
+    -- Bump this whenever the file changes: `print(Evergreen.Version)` on the client is the fastest
+    -- way to tell which copy is actually loaded (a stale raw.githubusercontent cache prints the old
+    -- stamp, or nil if the copy predates this field).
+    Version = "1.1.0",
+    Build = "2026.10.29 - mock-isolation fix",
     AppName = "Evergreen",
     Themes = Themes,
 
