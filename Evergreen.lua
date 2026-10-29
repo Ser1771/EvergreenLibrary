@@ -1180,11 +1180,11 @@ function Library:ApplyShadow(Target)
         Library.ShadowFrames[Target] = nil
     end
     local Spec = ShadowSpecFor(Kind)
-    if Spec == nil or Target.Props.__destroyed then return end
+    if Spec == nil then return end
 
     -- corner the shadow like its target so a rounded card casts a rounded shadow
     local BaseR = 0
-    for _, C in Target.Children do
+    for _, C in Target:GetChildren() do
         if C.ClassName == "UICorner" then BaseR = Library.Corners[C] or 0 break end
     end
 
@@ -1245,7 +1245,7 @@ end
 -- as a raised surface with a lit edge instead of a rectangle of colour.
 Library.HighlightKinds, Library.HighlightFrames = {}, {}
 function Library:ApplyHighlight(Target)
-    if not Target or Target.Props.__destroyed then return end
+    if not Target then return end
     local Spec = Library.Skin and Library.Skin.Highlight
     local Old = Library.HighlightFrames[Target]
     if Spec == nil or Spec == false then
@@ -1286,7 +1286,12 @@ end
 
 function Library:RefreshHighlights()
     for Target in Library.HighlightKinds do
-        if Target.Parent then self:ApplyHighlight(Target) else Library.HighlightKinds[Target] = nil end
+        if Target.Parent then
+            self:ApplyHighlight(Target)
+        else
+            Library.HighlightKinds[Target] = nil
+            Library.HighlightFrames[Target] = nil
+        end
     end
 end
 
