@@ -224,13 +224,66 @@ local Themes = {
         Red = Color3.fromRGB(200, 80, 70), IsLight = true,
     },
     -- Palette lifted from the Vitality reference: flat near-black panels, deep crimson accent
+    -- "Concrete": paper-grey surfaces, ink-black furniture, one loud accent. The only light
+    -- theme in the box, so it also exercises the IsLight path on every widget.
+    Concrete = {
+        Window = Color3.fromRGB(228, 226, 220), Sidebar = Color3.fromRGB(220, 218, 211), Titlebar = Color3.fromRGB(238, 236, 230),
+        Card = Color3.fromRGB(244, 242, 237), Control = Color3.fromRGB(236, 234, 228), ControlHover = Color3.fromRGB(224, 221, 213),
+        Popup = Color3.fromRGB(248, 246, 241), Segment = Color3.fromRGB(208, 205, 197), Track = Color3.fromRGB(214, 211, 203),
+        SliderFill = Color3.fromRGB(255, 90, 0), Outline = Color3.fromRGB(20, 20, 20), Text = Color3.fromRGB(20, 20, 20),
+        SubText = Color3.fromRGB(96, 94, 88), Accent = Color3.fromRGB(255, 90, 0), AccentText = Color3.fromRGB(255, 255, 255),
+        Red = Color3.fromRGB(198, 40, 30), IsLight = true,
+        Content = Color3.fromRGB(240, 238, 232), Inline = Color3.fromRGB(248, 246, 241), Element = Color3.fromRGB(232, 230, 223),
+        OutlineSoft = Color3.fromRGB(200, 197, 188), OutlineDeep = Color3.fromRGB(20, 20, 20), OutlineShade = Color3.fromRGB(20, 20, 20),
+    },
+    -- "Porcelain": the light palette Studio is drawn on. Barely-there greys, white cards and a
+    -- single saturated blue that only ever marks state. Built so hairlines stay visible without
+    -- any surface needing a heavy border.
+    Porcelain = {
+        Window = Color3.fromRGB(247, 248, 250), Sidebar = Color3.fromRGB(241, 242, 246), Titlebar = Color3.fromRGB(252, 252, 253),
+        Card = Color3.fromRGB(255, 255, 255), Control = Color3.fromRGB(243, 244, 247), ControlHover = Color3.fromRGB(233, 235, 240),
+        Popup = Color3.fromRGB(255, 255, 255), Segment = Color3.fromRGB(240, 241, 245), Track = Color3.fromRGB(226, 228, 234),
+        SliderFill = Color3.fromRGB(47, 107, 246), Outline = Color3.fromRGB(228, 230, 236), Text = Color3.fromRGB(24, 27, 33),
+        SubText = Color3.fromRGB(121, 127, 139), Accent = Color3.fromRGB(47, 107, 246), AccentText = Color3.fromRGB(255, 255, 255),
+        Red = Color3.fromRGB(214, 58, 68), IsLight = true,
+        Content = Color3.fromRGB(246, 247, 250), Inline = Color3.fromRGB(255, 255, 255), Element = Color3.fromRGB(252, 252, 254),
+        OutlineSoft = Color3.fromRGB(236, 238, 243), OutlineDeep = Color3.fromRGB(196, 201, 211), OutlineShade = Color3.fromRGB(214, 218, 226),
+    },
+    -- "Obsidian": cool graphite with a mint accent. Neutral enough to disappear behind the
+    -- content, but the accents carry a lot of contrast against it.
+    Obsidian = {
+        Window = Color3.fromRGB(15, 16, 19), Sidebar = Color3.fromRGB(17, 18, 22), Titlebar = Color3.fromRGB(15, 16, 19),
+        Card = Color3.fromRGB(21, 23, 27), Control = Color3.fromRGB(27, 29, 34), ControlHover = Color3.fromRGB(35, 38, 44),
+        Popup = Color3.fromRGB(24, 26, 31), Segment = Color3.fromRGB(20, 22, 26), Track = Color3.fromRGB(38, 41, 48),
+        SliderFill = Color3.fromRGB(110, 231, 183), Outline = Color3.fromRGB(33, 36, 42), Text = Color3.fromRGB(226, 229, 234),
+        SubText = Color3.fromRGB(138, 144, 155), Accent = Color3.fromRGB(110, 231, 183), AccentText = Color3.fromRGB(10, 16, 14),
+        Red = Color3.fromRGB(255, 110, 120), IsLight = false,
+        Content = Color3.fromRGB(12, 13, 16), Inline = Color3.fromRGB(21, 23, 27), Element = Color3.fromRGB(27, 29, 34),
+        OutlineSoft = Color3.fromRGB(27, 30, 35), OutlineDeep = Color3.fromRGB(8, 9, 11), OutlineShade = Color3.new(0, 0, 0),
+    },
+    -- "Midnight": the palette Halo is drawn on. Cool near-black shell, layered slate surfaces a
+    -- step lighter for each elevation, and a periwinkle accent that carries every "on" state.
+    Midnight = {
+        Window = Color3.fromRGB(11, 13, 18), Sidebar = Color3.fromRGB(13, 16, 23), Titlebar = Color3.fromRGB(11, 13, 18),
+        Card = Color3.fromRGB(18, 22, 31), Control = Color3.fromRGB(26, 32, 43), ControlHover = Color3.fromRGB(35, 42, 56),
+        Popup = Color3.fromRGB(20, 25, 34), Segment = Color3.fromRGB(15, 19, 27), Track = Color3.fromRGB(35, 42, 56),
+        SliderFill = Color3.fromRGB(122, 136, 255), Outline = Color3.fromRGB(36, 44, 58), Text = Color3.fromRGB(232, 236, 244),
+        SubText = Color3.fromRGB(140, 150, 171), Accent = Color3.fromRGB(122, 136, 255), AccentText = Color3.fromRGB(255, 255, 255),
+        Red = Color3.fromRGB(255, 107, 122), IsLight = false,
+        Content = Color3.fromRGB(14, 17, 24), Inline = Color3.fromRGB(18, 22, 31), Element = Color3.fromRGB(24, 30, 40),
+        OutlineSoft = Color3.fromRGB(28, 35, 48), OutlineDeep = Color3.fromRGB(5, 7, 11), OutlineShade = Color3.fromRGB(5, 7, 11),
+    },
+    -- Sampled from the Vitality reference: near-black shell, nested darker content panels, a
+    -- light-on-dark text ramp and the bright azure accent every "on" state uses.
     Vitality = {
-        Window = Color3.fromRGB(18, 18, 18), Sidebar = Color3.fromRGB(16, 16, 16), Titlebar = Color3.fromRGB(22, 22, 22),
-        Card = Color3.fromRGB(23, 23, 23), Control = Color3.fromRGB(28, 28, 28), ControlHover = Color3.fromRGB(38, 38, 38),
-        Popup = Color3.fromRGB(24, 24, 24), Segment = Color3.fromRGB(38, 38, 38), Track = Color3.fromRGB(35, 35, 35),
-        SliderFill = Color3.fromRGB(181, 32, 55), Outline = Color3.fromRGB(43, 43, 43), Text = Color3.fromRGB(232, 232, 232),
-        SubText = Color3.fromRGB(139, 139, 139), Accent = Color3.fromRGB(181, 32, 55), AccentText = Color3.fromRGB(255, 255, 255),
+        Window = Color3.fromRGB(23, 23, 23), Sidebar = Color3.fromRGB(23, 23, 23), Titlebar = Color3.fromRGB(20, 20, 20),
+        Card = Color3.fromRGB(18, 18, 18), Control = Color3.fromRGB(26, 26, 26), ControlHover = Color3.fromRGB(35, 35, 35),
+        Popup = Color3.fromRGB(22, 22, 22), Segment = Color3.fromRGB(30, 30, 30), Track = Color3.fromRGB(24, 24, 24),
+        SliderFill = Color3.fromRGB(31, 172, 252), Outline = Color3.fromRGB(35, 35, 35), Text = Color3.fromRGB(200, 200, 200),
+        SubText = Color3.fromRGB(135, 135, 135), Accent = Color3.fromRGB(31, 172, 252), AccentText = Color3.fromRGB(255, 255, 255),
         Red = Color3.fromRGB(255, 95, 87), IsLight = false,
+        Content = Color3.fromRGB(21, 21, 21), Inline = Color3.fromRGB(22, 22, 22), Element = Color3.fromRGB(26, 26, 26),
+        OutlineSoft = Color3.fromRGB(30, 30, 30), OutlineDeep = Color3.fromRGB(15, 15, 15), OutlineShade = Color3.fromRGB(10, 10, 10),
     },
 }
 
@@ -284,6 +337,7 @@ local Library = {
     TweenInfo = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     SlowTween = TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
     PopTween = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    FastTween = TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
     Scheme = {
         Font = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal),
@@ -624,7 +678,40 @@ end
 
 local defaultFonts = { Font = Library.Scheme.Font, FontBold = Library.Scheme.FontBold }
 
+-- Every palette defines the core keys; the extended ones (a recessed content panel, a brighter
+-- control surface, hairline variants) are derived here so *any* theme — including ones that predate
+-- them — supports every skin. Themes that do define them win, and the values are re-derived on each
+-- theme change because SetTheme drops derived keys first.
+function Library:DeriveSchemeKeys()
+    local S = Library.Scheme
+    local function Mix(A, B, T)
+        return Color3.new(A.R + (B.R - A.R) * T, A.G + (B.G - A.G) * T, A.B + (B.B - A.B) * T)
+    end
+    local Light = S.IsLight == true
+    local Window = S.Window or S.Card
+    local Card = S.Card or S.Window
+    local Control = S.Control or Card
+    local Outline = S.Outline or Card
+    if Window == nil then return end
+
+    if S.Element == nil then
+        S.Element = Light and Mix(Control, Card, 0.45) or Mix(Control, Window, 0.18)
+    end
+    -- the recessed panel the content sits in: one step behind the window it is cut into
+    if S.Content == nil then
+        S.Content = Light and Mix(Window, Outline, 0.42) or Mix(Window, Color3.new(0, 0, 0), 0.45)
+    end
+    if S.Inline == nil then S.Inline = Card end
+    if S.OutlineSoft == nil then S.OutlineSoft = Mix(Outline, Card, 0.45) end
+    if S.OutlineDeep == nil then
+        S.OutlineDeep = Light and Mix(Outline, Color3.new(0, 0, 0), 0.25) or Mix(Window, Color3.new(0, 0, 0), 0.6)
+    end
+    if S.OutlineShade == nil then S.OutlineShade = S.OutlineDeep end
+end
+Library.DerivedKeys = { "Element", "Content", "Inline", "OutlineSoft", "OutlineDeep", "OutlineShade" }
+
 function Library:RefreshTheme()
+    Library:DeriveSchemeKeys()
     Library:UpdateColorsUsingRegistry()
     Library:UpdateGradients()
     for _, E in Toggles do if E.Display then pcall(E.Display, E, true) end end
@@ -656,6 +743,8 @@ function Library:SetTheme(Theme)
                 Library.ThemeExtraKeys[K] = true
             end
         end
+        -- derived keys are recomputed for every palette (a skin must not inherit the previous one)
+        for _, K in Library.DerivedKeys do Library.Scheme[K] = nil end
         Library.ThemeName = Theme
         -- A theme picked by hand wins over the one a skin suggests
         if not Library.ApplyingSkin then Library.ThemePinned = true end
@@ -734,11 +823,11 @@ local DefaultSkin = {
 
     Titlebar = { Height = 40, Align = "Center", Icon = nil, TrafficLights = true, SidebarButton = true, UppercaseTitle = false },
     Tabs = { Style = "Sidebar", Height = 30, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false, Label = "Text", HoverTransparency = 0.45 },
-    Content = { ShowHeader = true, HeaderHeight = 54, PadX = 16 },
-    Groupbox = { HeaderHeight = 36, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12 },
-    Toggle = { Style = "Switch", BoxSize = 18, CheckGlyph = true },
-    Slider = { TrackHeight = 12, Knob = true, Area = 30, Square = false },
-    Button = { Flat = false },
+    Content = { ShowHeader = true, HeaderHeight = 54, PadX = 16, Panel = false, PanelPad = 0, Uppercase = false },
+    Groupbox = { HeaderHeight = 36, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12, HeaderFill = nil, HeaderDivider = false },
+    Toggle = { Style = "Switch", BoxSize = 18, CheckGlyph = true, Pop = true },
+    Slider = { TrackHeight = 12, Knob = true, Area = 30, Square = false, BarMode = false, Glide = true },
+    Button = { Flat = false, Height = 28, Press = true },
     Dropdown = { Chevron = nil, Height = 28 },
     Keybind = { Title = "Keybinds", Accent = false },
 }
@@ -757,19 +846,224 @@ local VitalitySkin = {
     Flat = true,
     Scrollbar = { Thickness = 2, Color = "Accent", Transparency = 0 },
 
-    Titlebar = { Height = 42, Align = "Left", Icon = "activity", TrafficLights = false, SidebarButton = true, UppercaseTitle = false },
-    -- Navigation stays in the usual sidebar: squared rows, flat crimson fill on the active tab
-    Tabs = { Style = "Sidebar", Height = 32, Gap = 2, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false, Uppercase = false, Label = "SubText", HoverTransparency = 0.62, Rail = true },
-    Content = { ShowHeader = false, HeaderHeight = 0, PadX = 14 },
-    Groupbox = { HeaderHeight = 34, HeaderSize = 13, Icon = true, Gap = 10, Pad = 12 },
-    Toggle = { Style = "Box", BoxSize = 16, CheckGlyph = false },
-    Slider = { TrackHeight = 8, Knob = false, Area = 22, Square = true },
-    Button = { Flat = true },
-    Dropdown = { Chevron = "▼", Height = 30 },
+    -- bright accent outline around the whole shell (the glowing edge in the reference)
+    Frame = { Color = "Accent", Transparency = 0.62 },
+    RowHover = 0.82, -- soft wash on row hover, lifted from the reference
+
+    Titlebar = { Height = 28, Align = "Left", Icon = "sparkles", TrafficLights = false, SidebarButton = true, UppercaseTitle = false },
+    -- Navigation stays where it always was; rows are compact and the active label is accent-tinted
+    Tabs = { Style = "Sidebar", Height = 24, Gap = 1, Pad = 6, ActiveStyle = "Accent", Icons = true, Separator = true, Uppercase = false, Label = "Text", HoverTransparency = 0.5, Rail = true },
+    Content = { ShowHeader = false, HeaderHeight = 0, PadX = 12, Panel = true, PanelPad = 6 },
+    Groupbox = { HeaderHeight = 24, HeaderSize = 12, Icon = false, Gap = 6, Pad = 9, HeaderFill = "Element", HeaderDivider = true },
+    Toggle = { Style = "Led", BoxSize = 11, CheckGlyph = false, Pop = true },
+    Slider = { TrackHeight = 6, Knob = false, Area = 20, Square = true, BarMode = true, Glide = true },
+    Button = { Flat = true, Height = 22, Press = true },
+    Dropdown = { Chevron = "▼", Height = 22 },
+    Scrollbar = { Thickness = 3, Color = "Accent", Transparency = 0.15 },
     Keybind = { Title = "Keybind List", Accent = true },
 }
 
-local Skins = { Default = DefaultSkin, Vitality = VitalitySkin }
+-- Same design, but with the reference's top tab strip instead of the sidebar. Opt-in only:
+-- the Vitality skin itself keeps the sidebar (that was an explicit requirement).
+local VitalityBarSkin = {
+    Name = "Vitality Bar",
+    DefaultTheme = "Vitality",
+    Font = VitalitySkin.Font,
+    BoldFont = VitalitySkin.BoldFont,
+    Square = true,
+    CornerKeep = 90,
+    PillRadius = 3,
+    RadiusScale = 0,
+    BorderThickness = 1,
+    GapScale = 0.82,
+    Flat = true,
+    Scrollbar = VitalitySkin.Scrollbar,
+    Frame = VitalitySkin.Frame,
+    RowHover = VitalitySkin.RowHover,
+    Content = { ShowHeader = false, HeaderHeight = 0, PadX = 12, Panel = true, PanelPad = 6 },
+    Groupbox = VitalitySkin.Groupbox,
+    Toggle = VitalitySkin.Toggle,
+    Slider = VitalitySkin.Slider,
+    Button = VitalitySkin.Button,
+    Dropdown = VitalitySkin.Dropdown,
+    Keybind = VitalitySkin.Keybind,
+    Titlebar = { Height = 28, Align = "Left", Icon = "sparkles", TrafficLights = false, SidebarButton = false, UppercaseTitle = false },
+    Tabs = { Style = "Bar", Height = 28, Gap = 0, Pad = 0, ActiveStyle = "Accent", Icons = false, Separator = true, Uppercase = false, Label = "Text", HoverTransparency = 0.5 },
+}
+
+-- "Brutal": paper and ink. Zero radius, 2px ink borders, hard offset shadows instead of soft
+-- ones, condensed uppercase type, and an inverted (ink) active tab. Its Motion block makes the
+-- whole UI feel mechanical — short, linear transitions with no easing tail.
+local BrutalSkin = {
+    Name = "Brutal",
+    DefaultTheme = "Concrete",
+    Font = { Family = "rbxasset://fonts/families/Oswald.json", Weight = "Medium" },
+    BoldFont = { Family = "rbxasset://fonts/families/Oswald.json", Weight = "Bold" },
+    Square = true,
+    CornerKeep = 90,
+    PillRadius = 0,
+    RadiusScale = 0,
+    BorderThickness = 2,
+    GapScale = 1.1,
+    Flat = true,
+    Scrollbar = { Thickness = 10, Color = "Outline", Transparency = 0 },
+    Shadow = { Offset = 5, Color = "Outline", Transparency = 0.82 },
+    Frame = { Color = "Outline", Transparency = 0, Thickness = 2 },
+    RowHover = 0.86,
+    Motion = { Time = 0.08, Style = "Linear" },
+
+    Titlebar = { Height = 44, Align = "Left", Icon = "layout", TrafficLights = false, SidebarButton = true, UppercaseTitle = true },
+    Tabs = {
+        Style = "Sidebar", Height = 36, Gap = 8, Pad = 12, ActiveStyle = "Invert", Icons = true, Separator = false,
+        Uppercase = true, Label = "Text", HoverTransparency = 0.55, Shadow = { Offset = 3, Transparency = 0.82 },
+    },
+    Content = { ShowHeader = true, HeaderHeight = 50, PadX = 20, Panel = false, Uppercase = true },
+    Groupbox = { HeaderHeight = 42, HeaderSize = 16, Icon = false, Gap = 12, Pad = 14, HeaderFill = nil, HeaderDivider = true, Uppercase = true, Spine = true, HeaderPadX = 18 },
+    Toggle = { Style = "Check", BoxSize = 18, CheckGlyph = true, Pop = true, Shadow = { Offset = 2, Transparency = 0.82 } },
+    Slider = { TrackHeight = 14, Knob = true, Area = 30, Square = true, BarMode = false, Glide = true },
+    Button = { Flat = true, Height = 34, Press = true, Shadow = { Offset = 3 } },
+    Dropdown = { Chevron = "▼", Height = 36 },
+    Keybind = { Title = "Keybind List", Accent = true },
+}
+
+-- "Halo": soft-modern. Cool slate elevations, generous radii, a lit top edge on every panel, a
+-- tinted accent pill for the active tab and a layered shadow stack that stands in for a blur. The
+-- aim was the calm, expensive feel of a desktop app rather than a game overlay.
+local HaloSkin = {
+    Name = "Halo",
+    Font = { Family = "rbxasset://fonts/families/GothamSSm.json", Weight = "Medium" },
+    BoldFont = { Family = "rbxasset://fonts/families/GothamSSm.json", Weight = "Bold" },
+    Square = false, CornerKeep = 90, PillRadius = nil, RadiusScale = 1.5,
+    BorderThickness = 1,
+    GapScale = 1.12,
+    Flat = false, -- keep the (very subtle) top-lit gradients on the shell and the cards
+    Scrollbar = { Thickness = 6, Color = "Outline", Transparency = 0.2 },
+    -- one lit pixel along the top edge of the shell and of every card
+    Highlight = { Color = "Text", Transparency = 0.88, Inset = 16 },
+    -- four fading layers instead of one slab: reads as a soft drop shadow without a blur pass
+    Shadow = { X = 0, Y = 5, Offset = 5, Layers = 4, Spread = 6, Falloff = 0.02, Transparency = 0.93, Color = Color3.fromRGB(0, 0, 0) },
+    RowHover = 0.94,
+    Motion = { Time = 0.18, Style = "Quint", Direction = "Out" },
+
+    Titlebar = { Height = 40, Align = "Left", Icon = "sparkles", TrafficLights = false, SidebarButton = true, UppercaseTitle = false },
+    Tabs = {
+        Style = "Sidebar", Height = 34, Gap = 4, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false,
+        HoverTransparency = 0.94,
+        -- selected row: accent at 14% with an accent label, i.e. a tinted pill
+        ActiveFill = "Accent", ActiveFillTransparency = 0.86, ActiveText = "Accent",
+        Label = "SubText", Shadow = false,
+    },
+    Content = { ShowHeader = true, HeaderHeight = 64, PadX = 22, Panel = false, TitleSize = 22, DescSize = 13 },
+    Groupbox = {
+        -- no header strip, no chevron: just a small muted caption over a roomy card
+        HeaderHeight = 26, HeaderSize = 12, HeaderBold = false, HeaderColor = "SubText", HeaderPadX = 16,
+        Icon = false, Chevron = false, Gap = 10, Pad = 16, HeaderFill = nil, HeaderDivider = false, Uppercase = true,
+    },
+    Toggle = { Style = "Switch", Width = 38, Height = 22, Pop = true, Shadow = false },
+    Slider = {
+        TrackHeight = 6, Knob = true, Area = 26, Square = false, BarMode = false, Glide = true, Gradient = true,
+        Shadow = { X = 0, Y = 2, Offset = 2, Layers = 2, Spread = 4, Falloff = 0.03, Transparency = 0.86, Color = Color3.fromRGB(0, 0, 0) },
+    },
+    Button = {
+        Flat = false, Height = 34, Press = true, Fill = "Element", Border = 0.72, Gradient = { 1.06, 0.94 },
+        Shadow = { X = 0, Y = 2, Offset = 2, Layers = 3, Spread = 4, Falloff = 0.02, Transparency = 0.94, Color = Color3.fromRGB(0, 0, 0) },
+    },
+    Dropdown = { Chevron = "\u{25BE}", Height = 34 },
+    Keybind = { Title = "Keybinds", Accent = true },
+    DefaultTheme = "Midnight",
+}
+
+-- "Arc": the app-shell direction. A tab strip across the top with an animated underline, no page
+-- title, and sections that are not cards at all — a small caption, a hairline and the controls
+-- sitting straight on one recessed panel. Dense, quiet and structural: the opposite bet to Halo's
+-- elevation, and the closest of the skins to a modern desktop tool.
+local ArcSkin = {
+    Name = "Arc",
+    Font = { Family = "rbxasset://fonts/families/Roboto.json", Weight = "Medium" },
+    BoldFont = { Family = "rbxasset://fonts/families/Roboto.json", Weight = "Bold" },
+    Square = false, CornerKeep = 90, PillRadius = nil, RadiusScale = 0.75,
+    BorderThickness = 1,
+    GapScale = 0.9,
+    Flat = true,
+    Scrollbar = { Thickness = 5, Color = "Outline", Transparency = 0.15 },
+    -- elevation is nearly absent by design: one soft shadow under the shell, nothing else
+    Shadow = { X = 0, Y = 6, Offset = 6, Layers = 3, Spread = 5, Falloff = 0.03, Transparency = 0.9, Color = Color3.fromRGB(0, 0, 0) },
+    RowHover = 0.94,
+    Motion = { Time = 0.14, Style = "Quint", Direction = "Out" },
+
+    Titlebar = { Height = 38, Align = "Left", Icon = "sparkles", TrafficLights = false, SidebarButton = false, UppercaseTitle = false },
+    Tabs = {
+        Style = "Bar", Height = 36, Gap = 0, Pad = 0, ActiveStyle = "Underline", Icons = false,
+        Separator = false, Uppercase = false, Label = "SubText", HoverTransparency = 0.94,
+        ActiveText = "Text", LineHeight = 2, LineInset = 0, Shadow = false,
+    },
+    -- no page title: the tab strip already says where you are
+    Content = { ShowHeader = false, HeaderHeight = 0, PadX = 14, Panel = true, PanelPad = 8 },
+    Groupbox = {
+        Card = false, HeaderHeight = 28, HeaderSize = 11, HeaderBold = false, HeaderColor = "SubText",
+        HeaderPadX = 14, Icon = false, Chevron = false, HeaderFill = nil, HeaderDivider = true,
+        Gap = 10, Pad = 14, Uppercase = true, Spine = false,
+    },
+    Toggle = { Style = "Switch", Width = 36, Height = 20, Pop = false, Shadow = false },
+    Slider = { TrackHeight = 4, Knob = true, Area = 22, Square = false, BarMode = false, Glide = true, Gradient = false, Shadow = false },
+    Button = {
+        Flat = false, Height = 30, Press = true, Fill = "Control", Border = 0.82, Gradient = { 1.05, 0.95 },
+        PrimaryFill = "Accent", PrimaryText = "AccentText", Shadow = false,
+    },
+    Dropdown = { Chevron = "\u{25BE}", Height = 30 },
+    Keybind = { Title = "Keybinds", Accent = true },
+    DefaultTheme = "Obsidian",
+}
+
+-- "Studio": the light, airy one. A narrow icon rail instead of a sidebar, white cards floating on
+-- an off-white shell with a hairline and the softest possible shadow, and a single blue that only
+-- ever marks state. No edge lights, no gradients, no heavy borders — the cleanliness comes from
+-- spacing and restraint rather than decoration.
+local StudioSkin = {
+    Name = "Studio",
+    Font = { Family = "rbxasset://fonts/families/GothamSSm.json", Weight = "Medium" },
+    BoldFont = { Family = "rbxasset://fonts/families/GothamSSm.json", Weight = "Bold" },
+    Square = false, CornerKeep = 90, PillRadius = nil, RadiusScale = 1.15,
+    BorderThickness = 1,
+    GapScale = 1.2,
+    Flat = true,
+    Scrollbar = { Thickness = 5, Color = "Track", Transparency = 0 },
+    -- white cards need only the faintest drop to separate from an off-white shell
+    Shadow = { X = 0, Y = 2, Offset = 2, Layers = 3, Spread = 7, Falloff = 0.012, Transparency = 0.955, Color = Color3.fromRGB(60, 70, 95) },
+    -- an edge light is a dark line on a light theme; this skin draws none
+    Highlight = false,
+    RowHover = 0.95,
+    Motion = { Time = 0.16, Style = "Quint", Direction = "Out" },
+
+    Titlebar = { Height = 46, Align = "Left", Icon = "sparkles", TrafficLights = false, SidebarButton = true, UppercaseTitle = false },
+    Tabs = {
+        Style = "Sidebar", SidebarWidth = 66, IconOnly = true, IconSize = 20, IconIdle = "SubText", CompactChip = true,
+        Height = 42, Gap = 6, Pad = 10, ActiveStyle = "Fill", Icons = true, Separator = false,
+        Uppercase = false, Label = "SubText", HoverTransparency = 0.94,
+        ActiveFill = "Accent", ActiveFillTransparency = 0.9, ActiveText = "Accent", Shadow = false,
+    },
+    Content = { ShowHeader = true, HeaderHeight = 72, PadX = 24, Panel = false, TitleSize = 22, DescSize = 13 },
+    Groupbox = {
+        Card = true, HeaderHeight = 32, HeaderSize = 12, HeaderBold = true, HeaderColor = "Text",
+        HeaderPadX = 16, Icon = false, Chevron = false, HeaderFill = nil, HeaderDivider = false,
+        Gap = 12, Pad = 16, Uppercase = true, Spine = false,
+    },
+    Toggle = { Style = "Switch", Width = 34, Height = 20, Pop = false, Shadow = false },
+    Slider = {
+        TrackHeight = 6, Knob = true, Area = 24, Square = false, BarMode = false, Glide = true, Gradient = false,
+        Shadow = { X = 0, Y = 1, Offset = 1, Layers = 2, Spread = 3, Falloff = 0.02, Transparency = 0.9, Color = Color3.fromRGB(60, 70, 95) },
+    },
+    Button = {
+        Flat = true, Height = 32, Press = true, Fill = "Control", Border = 0.85,
+        Gradient = { 1, 0.97 }, PrimaryFill = "Accent", PrimaryText = "AccentText",
+        Shadow = { X = 0, Y = 1, Offset = 1, Layers = 2, Spread = 3, Falloff = 0.02, Transparency = 0.94, Color = Color3.fromRGB(60, 70, 95) },
+    },
+    Dropdown = { Chevron = "\u{25BE}", Height = 32 },
+    Keybind = { Title = "Keybinds", Accent = true },
+    DefaultTheme = "Porcelain",
+}
+
+local Skins = { Default = DefaultSkin, Vitality = VitalitySkin, ["Vitality Bar"] = VitalityBarSkin, Brutal = BrutalSkin, Halo = HaloSkin, Arc = ArcSkin, Studio = StudioSkin }
 Library.Skins = Skins
 Library.Skin = DefaultSkin
 Library.SkinName = "Default"
@@ -810,6 +1104,17 @@ function Library:SkinRadius(R)
     return math.floor(R * Skin.RadiusScale + 0.5)
 end
 
+-- Knob finish follows the skin: pill handles keep a soft hairline, hard-edged skins get a solid
+-- ink outline so the handle still reads against a light track. Shared by both slider factories.
+function Library:StyleKnobStroke(K, SS)
+    local Skin = Library.Skin or DefaultSkin
+    local Solid = (SS or {}).Square == true
+    K.Thickness = Solid and (Skin.BorderThickness or 1) or 1
+    K.Transparency = Solid and 0 or 0.8
+    K.Color = Library.Scheme.Outline -- theme-bound so both finishes follow the palette
+    Bind(K, "Color", "Outline")
+end
+
 function Library:SkinGap(Gap)
     local Skin = Library.Skin or DefaultSkin
     return math.max(0, math.floor((Gap or 0) * (Skin.GapScale or 1) + 0.5))
@@ -844,6 +1149,147 @@ function Library:ApplySkinScrollbars()
 end
 
 -- Re-applies every registered corner / gap after a skin change
+local ApplyTiming -- forward declaration: skin geometry calls it, it is defined below
+
+--// Hard shadows \\--
+-- A skin may replace the soft drop shadow with a solid block tucked behind and offset from an
+-- element — the signature of the "Brutal" skin. Targets are remembered so a skin swap can add,
+-- move or remove the block live.
+Library.ShadowKinds, Library.ShadowFrames, Library.ShadowSets = {}, {}, {}
+
+local function ShadowSpecFor(Kind)
+    local S = Library.Skin or DefaultSkin
+    local Base = S.Shadow
+    if Base == nil or Base == false then return nil end
+    local Sub = (Kind == "button" and S.Button and S.Button.Shadow)
+        or (Kind == "tab" and S.Tabs and S.Tabs.Shadow)
+        or (Kind == "toggle" and S.Toggle and S.Toggle.Shadow)
+        or (Kind == "knob" and S.Slider and S.Slider.Shadow)
+    if Sub == false then return nil end
+    return Sub or Base
+end
+
+function Library:ApplyShadow(Target)
+    local Kind = Library.ShadowKinds[Target]
+    if Kind == nil then return end
+    -- rebuild from scratch: a spec change (skin swap) may add or drop layers
+    local Old = Library.ShadowSets[Target]
+    if Old then
+        for _, F in Old do if F and F.Destroy then F:Destroy() end end
+        Library.ShadowSets[Target] = nil
+        Library.ShadowFrames[Target] = nil
+    end
+    local Spec = ShadowSpecFor(Kind)
+    if Spec == nil or Target.Props.__destroyed then return end
+
+    -- corner the shadow like its target so a rounded card casts a rounded shadow
+    local BaseR = 0
+    for _, C in Target.Children do
+        if C.ClassName == "UICorner" then BaseR = Library.Corners[C] or 0 break end
+    end
+
+    local Layers = math.clamp(Spec.Layers or 1, 1, 8)
+    local Off = Spec.Offset or 4
+    local Spread = Spec.Spread or 0
+    local Falloff = Spec.Falloff or 0.035
+    local BaseT = Spec.Transparency or 0
+    local Color = Spec.Color or "Outline"
+
+    local Set = {}
+    for I = 1, Layers do
+        local Grow = (I - 1) * Spread
+        local F = New("Frame", { BorderSizePixel = 0, Parent = Target })
+        F.Name = "SkinShadow"
+        F.ZIndex = (Target.ZIndex or 1) - 1
+        -- the stack grows outwards and fades, which reads as a soft blur without one
+        F.Position = UDim2.fromOffset((Spec.X or Off) - Grow * 0.5, (Spec.Y or Off) - Grow * 0.5)
+        F.Size = UDim2.new(1, (Spec.W or 0) + Grow, 1, (Spec.H or 0) + Grow)
+        F.BackgroundTransparency = math.clamp(BaseT + (I - 1) * Falloff, 0, 1)
+        Corner(F, BaseR + math.floor(Grow / 2))
+        if typeof(Color) == "Color3" then
+            F.BackgroundColor3 = Color
+        else
+            Bind(F, "BackgroundColor3", Color)
+        end
+        table.insert(Set, F)
+    end
+    -- re-attach furthest-first so the darkest layer ends up on top of the others
+    for I = #Set, 1, -1 do
+        local F = Set[I]
+        F.Parent = nil
+        F.Parent = Target
+    end
+    Library.ShadowSets[Target] = Set
+    Library.ShadowFrames[Target] = Set[1]
+end
+
+function Library:RegisterShadow(Target, Kind)
+    if not Target then return end
+    Library.ShadowKinds[Target] = Kind
+    self:ApplyShadow(Target)
+end
+
+function Library:RefreshShadows()
+    for Target in Library.ShadowKinds do
+        if Target.Parent then
+            self:ApplyShadow(Target)
+        else
+            Library.ShadowKinds[Target] = nil
+            Library.ShadowFrames[Target] = nil
+            Library.ShadowSets[Target] = nil
+        end
+    end
+end
+
+-- A one-pixel inner highlight along the top edge. Cheap, and it is what makes a flat panel read
+-- as a raised surface with a lit edge instead of a rectangle of colour.
+Library.HighlightKinds, Library.HighlightFrames = {}, {}
+function Library:ApplyHighlight(Target)
+    if not Target or Target.Props.__destroyed then return end
+    local Spec = Library.Skin and Library.Skin.Highlight
+    local Old = Library.HighlightFrames[Target]
+    if Spec == nil or Spec == false then
+        if Old then Old:Destroy() end
+        Library.HighlightFrames[Target] = nil
+        return
+    end
+    local Inset = Spec.Inset or 12
+    local Thick = Spec.Thickness or 1
+    local F = Old
+    if not F or not F.Parent then
+        F = New("Frame", { BorderSizePixel = 0, Name = "SkinHighlight", Parent = Target })
+        Library.HighlightFrames[Target] = F
+    else
+        F.Parent = nil
+        F.Parent = Target
+    end
+    F.ZIndex = (Target.ZIndex or 1) + 1
+    F.AnchorPoint = Vector2.new(0.5, 0)
+    F.Position = UDim2.new(0.5, 0, 0, 0)
+    F.Size = UDim2.new(1, -Inset * 2, 0, Thick)
+    F.BackgroundTransparency = Spec.Transparency or 0.9
+    F.Visible = Spec.Visible ~= false
+    if typeof(Spec.Color) == "Color3" then
+        F.BackgroundColor3 = Spec.Color
+        Library.Registry[F] = nil
+    else
+        F.BackgroundColor3 = Library.Scheme[Spec.Color or "Text"]
+        Bind(F, "BackgroundColor3", Spec.Color or "Text")
+    end
+end
+
+function Library:RegisterHighlight(Target)
+    if not Target then return end
+    Library.HighlightKinds[Target] = true
+    self:ApplyHighlight(Target)
+end
+
+function Library:RefreshHighlights()
+    for Target in Library.HighlightKinds do
+        if Target.Parent then self:ApplyHighlight(Target) else Library.HighlightKinds[Target] = nil end
+    end
+end
+
 function Library:ApplySkinGeometry()
     for Corner_, Base in Library.Corners do
         pcall(function() Corner_.CornerRadius = UDim.new(0, Library:SkinRadius(Base)) end)
@@ -851,21 +1297,45 @@ function Library:ApplySkinGeometry()
     for Layout_, Base in Library.SkinLists do
         pcall(function() Layout_.Padding = UDim.new(0, Library:SkinGap(Base)) end)
     end
+    Library:RefreshShadows()
+    Library:RefreshHighlights()
+    ApplyTiming()
 end
 
 -- Library:GetOption("aimbot") works for every flagged element kind (toggles, sliders, dropdowns,
 -- listboxes, keybinds, colour pickers), so scripts do not have to remember which table holds what.
+-- Resolves the four stock timings from (a) the library defaults, (b) the active skin's Motion
+-- block and (c) the global motion switch. Called on every skin change, so a skin can make the
+-- whole UI feel different — not just look different.
+local BaseTweens
+function ApplyTiming()
+    BaseTweens = BaseTweens or {
+        TweenInfo = Library.TweenInfo, SlowTween = Library.SlowTween,
+        PopTween = Library.PopTween, FastTween = Library.FastTween,
+    }
+    local Motion = Library.Skin and Library.Skin.Motion
+    local function Resolve(Default, Scale)
+        if Library.Motion == false then return TweenInfo.new(0, Enum.EasingStyle.Linear) end
+        if typeof(Motion) == "table" then
+            local Style = Enum.EasingStyle[Motion.Style or "Linear"] or Enum.EasingStyle.Linear
+            local Dir = Enum.EasingDirection[Motion.Direction or "Out"] or Enum.EasingDirection.Out
+            return TweenInfo.new(math.max(0, (Motion.Time or 0.1) * Scale), Style, Dir)
+        end
+        return Default
+    end
+    Library.TweenInfo = Resolve(BaseTweens.TweenInfo, 1)
+    Library.FastTween = Resolve(BaseTweens.FastTween, 0.6)
+    Library.SlowTween = Resolve(BaseTweens.SlowTween, 1.6)
+    Library.PopTween = Resolve(BaseTweens.PopTween, 1)
+    -- kept public: existing scripts reach for Evergreen.BaseTweens.TweenInfo
+    Library.BaseTweens = BaseTweens
+end
+Library.ApplyTiming = ApplyTiming
+
 -- Library:SetMotion(false) -- disable every transition (instant state changes)
 function Library:SetMotion(Enabled: boolean?)
-    -- remember the library's own timings the first time so they can be restored exactly
-    Library.BaseTweens = Library.BaseTweens or { TweenInfo = Library.TweenInfo, SlowTween = Library.SlowTween }
     Library.Motion = Enabled ~= false
-    if Library.Motion then
-        Library.TweenInfo, Library.SlowTween = Library.BaseTweens.TweenInfo, Library.BaseTweens.SlowTween
-    else
-        Library.TweenInfo = TweenInfo.new(0, Enum.EasingStyle.Linear)
-        Library.SlowTween = TweenInfo.new(0, Enum.EasingStyle.Linear)
-    end
+    ApplyTiming()
     return Library.Motion
 end
 
@@ -978,7 +1448,17 @@ end
 -- Small helpers used by builders
 function Library:IsFlatSkin() return (Library.Skin or DefaultSkin).Flat == true end
 function Library:SkinTabs() return (Library.Skin or DefaultSkin).Tabs or DefaultSkin.Tabs end
+function Library:SkinButton() return (Library.Skin or DefaultSkin).Button or DefaultSkin.Button end
+
 function Library:SkinTitlebar() return (Library.Skin or DefaultSkin).Titlebar or DefaultSkin.Titlebar end
+
+-- Page headers can be forced to upper case by a skin without touching the tab's own name
+function Library:HeaderCase(Text)
+    local C = (Library.Skin or DefaultSkin).Content or {}
+    local S = tostring(Text or "")
+    if C.Uppercase == true then return string.upper(S) end
+    return S
+end
 function Library:SkinGroupbox() return (Library.Skin or DefaultSkin).Groupbox or DefaultSkin.Groupbox end
 function Library:SkinToggle() return (Library.Skin or DefaultSkin).Toggle or DefaultSkin.Toggle end
 function Library:SkinSlider() return (Library.Skin or DefaultSkin).Slider or DefaultSkin.Slider end
@@ -2406,6 +2886,7 @@ local function BindPointerDrag(Area, Owner, OnMove, OnTap, OnEnd)
         if Session then return end
 
         ActiveSliderDrag = Owner
+        if Owner.Dragging ~= nil then Owner.Dragging = true end
         Session = {
             Input = Input,
             Start = Input.Position,
@@ -2420,6 +2901,7 @@ local function BindPointerDrag(Area, Owner, OnMove, OnTap, OnEnd)
             if not Session or Session.Token ~= Token then return end
             local Engaged, Moved = Session.Engaged, Session.Moved
             Session = nil
+            if Owner.Dragging ~= nil then Owner.Dragging = false end
             if ActiveSliderDrag == Owner then ActiveSliderDrag = nil end
             if MoveConn then MoveConn:Disconnect() end
             if EndConn then EndConn:Disconnect() end
@@ -2527,8 +3009,24 @@ local function Finalize(Group, Element, Holder, Store, Idx, Info)
 end
 
 local function MakeRow(Group, Height, AsButton)
-    local Row = New(AsButton and "TextButton" or "Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Height or 22), Parent = Group.Container })
+    local Row = New(AsButton and "TextButton" or "Frame", {
+        BackgroundColor3 = "ControlHover", BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, Height or 22), Parent = Group.Container,
+    })
     List(Row, 8, Enum.FillDirection.Horizontal, nil, Enum.VerticalAlignment.Center)
+    Bind(Row, "BackgroundColor3", "ControlHover")
+    -- hover wash, inset a little so it reads as a row highlight rather than a block
+    Row.ClipsDescendants = false
+    if AsButton then
+        Row.MouseEnter:Connect(function()
+            if Row.Active ~= false and Library.Skin and Library.Skin.RowHover ~= false then
+                Tween(Row, { BackgroundTransparency = Library.Skin.RowHover or 0.82 }, Library.FastTween)
+            end
+        end)
+        Row.MouseLeave:Connect(function()
+            Tween(Row, { BackgroundTransparency = 1 }, Library.FastTween)
+        end)
+    end
     return Row
 end
 
@@ -2714,8 +3212,12 @@ function Funcs:AddButton(...)
     end
 
     local Group = self
-    local Holder = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 28), Parent = Group.Container })
+    local SkinBtn = Library:SkinButton()
+    local Holder = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, SkinBtn.Height or 28), Parent = Group.Container })
     List(Holder, 8, Enum.FillDirection.Horizontal)
+    -- keep a registry (not a field on Group: ButtonHolder already means the subtab strip on tabboxes)
+    Library.ButtonRows = Library.ButtonRows or {}
+    table.insert(Library.ButtonRows, Holder)
 
     local function Build(Info, Type)
         local B = {
@@ -2723,17 +3225,28 @@ function Funcs:AddButton(...)
             Primary = Info.Primary, Disabled = Info.Disabled, Visible = Info.Visible, Locked = false, Hold = Info.Hold, Addons = {},
             Connections = {}, Icon = Info.Icon,
         }
-        local BaseKey = B.Primary and "Accent" or "Control"
+        Library.Buttons = Library.Buttons or {}
+        table.insert(Library.Buttons, B)
+        local SB = Library:SkinButton()
+        -- a skin can restate the surface the button sits on, which is how a "raised card" look is
+        -- expressed without changing the component: Fill = colour key, Border = stroke transparency
+        local BaseKey = B.Primary and (SB.PrimaryFill or "Accent") or (SB.Fill or "Control")
+        B.BaseKey = BaseKey
         B.Base = New("TextButton", { BackgroundColor3 = BaseKey, BackgroundTransparency = 0, Size = UDim2.new(0, 0, 1, 0), Visible = B.Visible, Parent = Holder })
         Flex(B.Base)
         Corner(B.Base, 7)
-        B.Stroke = Stroke(B.Base, "Outline", 1, 0.55)
+        Library:RegisterShadow(B.Base, "button")
+        B.Stroke = Stroke(B.Base, "Outline", 1, SB.Border or 0.55)
         if not Library:IsFlatSkin() then
-            New("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.78, 0.78, 0.78)), Parent = B.Base })
+            local G = SB.Gradient or { 1, 0.78 }
+            B.Gradient = New("UIGradient", {
+                Rotation = 90, Parent = B.Base,
+                Color = ColorSequence.new(Color3.new(G[1], G[1], G[1]), Color3.new(G[2], G[2], G[2])),
+            })
         end
 
         local Icon = Library:GetCustomIcon(B.Icon)
-        local TextColor = B.Primary and "AccentText" or (B.Risky and "Red" or "Text")
+        local TextColor = B.Primary and (SB.PrimaryText or "AccentText") or (B.Risky and "Red" or "Text")
         B.Label = New("TextLabel", { Size = UDim2.fromScale(1, 1), Text = Library:ToRichText(B.Text), TextColor3 = TextColor, Parent = B.Base })
         B.LabelObj = B.Label
         if Icon then
@@ -2745,12 +3258,30 @@ function Funcs:AddButton(...)
 
         local function Colors(Hover)
             local Normal, Hovered
+            local BG = Library:SkinButton()
+            local Key = B.Primary and (BG.PrimaryFill or "Accent") or (BG.Fill or "Control")
             if B.Primary then
-                Normal, Hovered = Library.Scheme.Accent, Lighten(Library.Scheme.Accent, 0.07)
+                Normal = Library.Scheme[Key] or Library.Scheme.Accent
+                Hovered = Lighten(Normal, 0.07)
             else
-                Normal, Hovered = Library.Scheme.Control, Library.Scheme.ControlHover
+                Normal = Library.Scheme[Key] or Library.Scheme.Control
+                Hovered = Library.Scheme.ControlHover
             end
             return Hover and Hovered or Normal
+        end
+
+        -- re-apply the skin's surface after a live swap (fill key, border weight, gradient lift)
+        function B:ApplySkin()
+            local S2 = Library:SkinButton()
+            B.BaseKey = B.Primary and (S2.PrimaryFill or "Accent") or (S2.Fill or "Control")
+            B.Base.BackgroundColor3 = Library.Scheme[B.BaseKey]
+            Bind(B.Base, "BackgroundColor3", B.BaseKey)
+            B.Stroke.Transparency = B.Disabled and 0.8 or (S2.Border or 0.55)
+            if B.Gradient then
+                local G = S2.Gradient or { 1, 0.78 }
+                B.Gradient.Color = ColorSequence.new(Color3.new(G[1], G[1], G[1]), Color3.new(G[2], G[2], G[2]))
+            end
+            Library:RegisterShadow(B.Base, "button")
         end
 
         function B:UpdateColors()
@@ -2998,23 +3529,45 @@ function Funcs:AddToggle(Idx, Info)
         end
         local ST = Library:SkinToggle()
         local BoxSize = ST.BoxSize or 18
-        -- box styles draw a filled square instead of an iOS switch
-        SwitchBox = BaseStyle == "Checkbox" or ST.Style == "Box"
+        -- box/led styles draw a square indicator instead of an iOS switch
+        SwitchBox = BaseStyle == "Checkbox" or ST.Style == "Box" or ST.Style == "Led" or ST.Style == "Check"
         if not SwitchBox then
-            Switch = New("Frame", { BackgroundColor3 = "Track", Size = UDim2.fromOffset(34, 20), LayoutOrder = 3, Parent = Row })
+            local SW = ST.Width or 34
+            local SH = ST.Height or 20
+            local KS_ = math.max(SH - 4, 8)
+            Switch = New("Frame", { BackgroundColor3 = "Track", Size = UDim2.fromOffset(SW, SH), LayoutOrder = 3, Parent = Row })
             Corner(Switch, 99)
-            Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.fromOffset(16, 16), Parent = Switch })
+            Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.fromOffset(KS_, KS_), Parent = Switch })
             Corner(Knob, 99)
             Stroke(Knob, Color3.new(0, 0, 0), 1, 0.88)
+            Switch.KnobSize = KS_
         else
-            Switch = New("Frame", { BackgroundColor3 = "Control", Size = UDim2.fromOffset(BoxSize, BoxSize), LayoutOrder = 3, Parent = Row })
-            Corner(Switch, 5)
-            Stroke(Switch, "Outline", 1, 0.2)
-            Check = Glyph(Switch, "check", "✓", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(12, 12), Color = "AccentText" })
-            -- square "LED" styles have no tick: the filled color carries the state
-            Check.Visible = ST.CheckGlyph ~= false
-            if ST.CheckGlyph ~= false then GlyphTransparency(Check, 1) end
+            -- "Led" is the reference's indicator: a tiny inset square that lights up in the accent
+            local Led = ST.Style == "Led"
+            Switch = New("Frame", {
+                BackgroundColor3 = "Control", Size = UDim2.fromOffset(BoxSize, BoxSize), LayoutOrder = 3, Parent = Row,
+            })
+            Corner(Switch, Led and 1 or 5)
+            Stroke(Switch, "Outline", 1, Led and 0.10 or 0.2)
+            if Led then
+                -- 1px inner ring gives the LED its recessed look
+                local Inner = New("Frame", {
+                    BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+                    Size = UDim2.new(1, -2, 1, -2), Parent = Switch,
+                })
+                Corner(Inner, 1)
+                local InnerStroke = New("UIStroke", { Color = "OutlineShade", Thickness = 1, Transparency = 0.35, Parent = Inner })
+                Library.ThemeHooks[InnerStroke] = function() InnerStroke.Color = Library.Scheme.OutlineShade end
+                Switch.LedInner = Inner
+            else
+                Check = Glyph(Switch, "check", "✓", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(12, 12), Color = "AccentText" })
+                -- square "LED" styles have no tick: the filled color carries the state
+                Check.Visible = ST.CheckGlyph ~= false
+                if ST.CheckGlyph ~= false then GlyphTransparency(Check, 1) end
+            end
+            Switch.PopScale = New("UIScale", { Scale = 1, Parent = Switch })
         end
+        Library:RegisterShadow(Switch, "toggle")
         if Toggle.Display then Toggle:Display(true) end
     end
 
@@ -3025,12 +3578,22 @@ function Funcs:AddToggle(Idx, Info)
         if not SwitchBox then
             Anim(Switch, { BackgroundColor3 = On and Library.Scheme.Accent or Library.Scheme.Track, BackgroundTransparency = Dim }, Instant)
             Bind(Switch, "BackgroundColor3", On and "Accent" or "Track")
-            Anim(Knob, { Position = On and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 2, 0.5, 0), BackgroundTransparency = Dim }, Instant)
+            Anim(Knob, { Position = On and UDim2.new(1, -(Switch.KnobSize + 2), 0.5, 0) or UDim2.new(0, 2, 0.5, 0), BackgroundTransparency = Dim }, Instant)
         else
-            Anim(Switch, { BackgroundColor3 = On and Library.Scheme.Accent or Library.Scheme.Control, BackgroundTransparency = Dim }, Instant)
+            local Led = Library:SkinToggle().Style == "Led"
+            Anim(Switch, {
+                BackgroundColor3 = On and Library.Scheme.Accent or Library.Scheme.Control,
+                BackgroundTransparency = Dim + ((not On and Led) and 0.15 or 0),
+            }, Instant)
             Bind(Switch, "BackgroundColor3", On and "Accent" or "Control")
             if Check and Check.Visible then GlyphTransparency(Check, On and Dim or 1) end
+            -- the LED "lights up": a quick scale pop, skipped on the first paint and for reduced motion
+            if Switch.PopScale and not Instant and Library:SkinToggle().Pop ~= false and Toggle.Painted then
+                Switch.PopScale.Scale = 0.72
+                Tween(Switch.PopScale, { Scale = 1 }, Library.PopTween)
+            end
         end
+        Toggle.Painted = true
         Anim(Label, { TextTransparency = Toggle.Disabled and 0.55 or 0 }, Instant)
     end
 
@@ -3323,17 +3886,36 @@ function Funcs:AddSlider(Idx, Info)
         TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = "SubText", ClearTextOnFocus = false, Text = "", Parent = Top,
     })
     local SkinSlider = Library:SkinSlider()
+    -- Bar mode (the reference): the label/value line sits above a full-width bar with no knob
+    local BarMode = SkinSlider.BarMode == true
+    if BarMode then
+        Label.TextColor3 = Library.Scheme.SubText
+        Bind(Label, "TextColor3", "SubText")
+        Holder.Size = UDim2.new(1, 0, 0, 0) -- AutomaticSize keeps the row order intact
+    end
     -- knob is taller than the track so it visibly sticks out of it; knob-less skins set KS to 0
     local KS = if SkinSlider.Knob == false then 0 else 18
     local Area = New("TextButton", { Size = UDim2.new(1, 0, 0, SkinSlider.Area or 30), ClipsDescendants = false, Parent = Holder })
-    local Track = New("Frame", { BackgroundColor3 = "Track", BackgroundTransparency = 0.35, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.new(1, 0, 0, SkinSlider.TrackHeight or 12), ClipsDescendants = false, Parent = Area })
+    local Track = New("Frame", {
+        BackgroundColor3 = "Track", BackgroundTransparency = BarMode and 0.1 or 0.35,
+        AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0),
+        Size = UDim2.new(1, 0, 0, SkinSlider.TrackHeight or 12), ClipsDescendants = true, Parent = Area,
+    })
     Corner(Track, 99)
-    Stroke(Track, "Outline", 1, 0.6)
+    local TrackStroke = Stroke(Track, "Outline", 1, BarMode and 0.45 or 0.6)
     local FillBar = New("Frame", { BackgroundColor3 = "SliderFill", Size = UDim2.fromScale(0.5, 1), Parent = Track })
     Corner(FillBar, 99)
+    -- a subtle lift across the accent fill keeps a flat bar from looking like a painted stripe
+    if SkinSlider.Gradient then
+        local A = Library.Scheme.SliderFill
+        local B = Color3.new(math.min(1, A.R * 1.16 + 0.04), math.min(1, A.G * 1.16 + 0.04), math.min(1, A.B * 1.16 + 0.04))
+        New("UIGradient", { Rotation = 0, Color = ColorSequence.new(A, B), Parent = FillBar })
+    end
     local Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(KS, KS), Visible = KS > 0, ZIndex = 3, Parent = Area })
     Corner(Knob, 99)
-    Stroke(Knob, Color3.new(0, 0, 0), 1, 0.8)
+    local KnobStroke = Stroke(Knob, Color3.new(0, 0, 0), 1, 0.8)
+    Library:StyleKnobStroke(KnobStroke, SkinSlider)
+    Library:RegisterShadow(Knob, "knob")
 
     -- thin tracks / knob-less handles come from the skin and can change while the UI is live
     function Slider:ApplySkin()
@@ -3341,9 +3923,14 @@ function Funcs:AddSlider(Idx, Info)
         KS = if SS.Knob == false then 0 else 18
         Area.Size = UDim2.new(1, 0, 0, SS.Area or 30)
         Track.Size = UDim2.new(1, 0, 0, SS.TrackHeight or 12)
+        Track.BackgroundTransparency = SS.BarMode and 0.1 or 0.35
+        TrackStroke.Transparency = SS.BarMode and 0.45 or 0.6
         Knob.Size = UDim2.fromOffset(KS, KS)
         Knob.Visible = KS > 0
-        Slider:Display()
+        Library:StyleKnobStroke(KnobStroke, SS)
+        Label.TextColor3 = SS.BarMode and Library.Scheme.SubText or Library.Scheme.Text
+        Bind(Label, "TextColor3", SS.BarMode and "SubText" or "Text")
+        Slider:Display(true)
     end
 
     local function Format(V)
@@ -3351,11 +3938,18 @@ function Funcs:AddSlider(Idx, Info)
         return Slider.Prefix .. N .. Slider.Suffix
     end
 
-    function Slider:Display()
+    function Slider:Display(Instant)
         if Library.Unloaded then return end
         local X = (Slider.Value - Slider.Min) / math.max(Slider.Max - Slider.Min, 1e-9)
-        FillBar.Size = UDim2.new(X, (0.5 - X) * KS, 1, 0)
+        local Target = UDim2.new(X, (0.5 - X) * KS, 1, 0)
+        local Glide = Library:SkinSlider().Glide ~= false and not Instant and not Slider.Dragging and Slider.Painted
+        if Glide then
+            Tween(FillBar, { Size = Target }, Library.FastTween)
+        else
+            FillBar.Size = Target
+        end
         Knob.Position = UDim2.new(X, (0.5 - X) * KS, 0.5, 0)
+        Slider.Painted = true
         ValueBox.Text = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Slider, Slider.Value)) or Format(Slider.Value)
         local D = Slider.Disabled and 0.55 or 0
         Label.TextTransparency, ValueBox.TextTransparency = D, D
@@ -3456,10 +4050,14 @@ function Funcs:AddRangeSlider(Idx, Info)
     local FillBar = New("Frame", { BackgroundColor3 = "SliderFill", Size = UDim2.fromScale(0.5, 1), Parent = Track })
     Corner(FillBar, 99)
 
+    local RangeStrokes = {}
     local function MakeKnob()
         local Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.fromOffset(KS, KS), Visible = KS > 0, ZIndex = 3, Parent = Area })
         Corner(Knob, 99)
-        Stroke(Knob, Color3.new(0, 0, 0), 1, 0.8)
+        local St = Stroke(Knob, Color3.new(0, 0, 0), 1, 0.8)
+        Library:StyleKnobStroke(St, Library:SkinSlider())
+        table.insert(RangeStrokes, St)
+        Library:RegisterShadow(Knob, "knob")
         return Knob
     end
     local KnobL = MakeKnob()
@@ -3474,6 +4072,7 @@ function Funcs:AddRangeSlider(Idx, Info)
             K.Size = UDim2.fromOffset(KS, KS)
             K.Visible = KS > 0
         end
+        for _, St in RangeStrokes do Library:StyleKnobStroke(St, SS) end
         RS:Display()
     end
 
@@ -6636,7 +7235,15 @@ function Library:CreateWindow(WindowInfo)
     local Window = { Info = WindowInfo }
     local Skin = Library.Skin
     local SkinBar = (Skin.Tabs.Style == "Bar")
-    local SidebarWidth = WindowInfo.SidebarWidth
+    -- A skin may narrow the sidebar into an icon rail. The window's own width still wins if the
+    -- caller passed one explicitly.
+    local SkinRail = (Library.Skin and Library.Skin.Tabs and Library.Skin.Tabs.SidebarWidth) or nil
+    if WindowInfo.SidebarWidth ~= nil then
+        WindowInfo.SidebarWidthExplicit = true
+        WindowInfo.ExplicitSidebarWidth = WindowInfo.SidebarWidth
+    end
+    WindowInfo.DefaultSidebarWidth = WindowInfo.DefaultSidebarWidth or WindowInfo.SidebarWidth or 190
+    local SidebarWidth = WindowInfo.SidebarWidthExplicit and WindowInfo.SidebarWidth or (SkinRail or WindowInfo.SidebarWidth)
     local TitleH = Skin.Titlebar.Height or 40
     local TabH = SkinBar and (Skin.Tabs.Height or 38) or 0
 
@@ -6652,6 +7259,25 @@ function Library:CreateWindow(WindowInfo)
     Grad(Main, Two("Window", 0.05, -0.015), 125)
     Library:AddSurface(Main, 0, 1)
     Library:AddGlass(Main)
+    -- optional accent outline around the shell (Vitality's glowing edge)
+    local FrameStroke = New("UIStroke", {
+        Color = "Accent", Thickness = Skin.BorderThickness or 1, Transparency = 1,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = Main,
+    })
+    Window.FrameStroke = FrameStroke
+    local function ApplyFrame()
+        local F = Library.Skin and Library.Skin.Frame
+        if not F then FrameStroke.Transparency = 1 return end
+        FrameStroke.Transparency = F.Transparency or 0.6
+        FrameStroke.Thickness = F.Thickness or (Library.Skin and Library.Skin.BorderThickness) or 1
+        local Key = F.Color or "Accent"
+        FrameStroke.Color = Library.Scheme[Key] or Library.Scheme.Accent
+        Library.Registry[FrameStroke] = Library.Registry[FrameStroke] or {}
+        Library.Registry[FrameStroke].Color = Key
+    end
+    Window.ApplyFrame = ApplyFrame
+    ApplyFrame()
+    Library:RegisterShadow(Root, "window")
     local MainScale = New("UIScale", { Parent = Main })
 
     -- Wallpaper sits behind all chrome (title/sidebar/content)
@@ -6751,10 +7377,22 @@ function Library:CreateWindow(WindowInfo)
     SetWordmark(Skin.Titlebar.Icon)
     Window.SetWordmark = SetWordmark
 
-    local TitleRich = Library:RenderRich(TitleHolder, WindowInfo.Title, {
+    local TitleRaw = WindowInfo.Title
+    local function TitleCase(S, T)
+        S = S or Library.Skin or DefaultSkin
+        local Up = (S.Titlebar and S.Titlebar.UppercaseTitle) == true
+        if Up then return string.upper(tostring(T or "")) end
+        return tostring(T or "")
+    end
+    local TitleRich = Library:RenderRich(TitleHolder, TitleCase(Skin, TitleRaw), {
         Size = 14, Bold = true, Align = LeftTitle and "Left" or "Center", LayoutOrder = 1,
         Visible = WindowInfo.Title ~= "",
     })
+    -- re-cases the title in place so a skin swap does not have to rebuild the window
+    Window.RefreshTitleCase = function(S, T)
+        if T ~= nil then TitleRaw = T end
+        TitleRich:Render(TitleCase(S or Library.Skin, TitleRaw))
+    end
     local SubtitleRich = Library:RenderRich(TitleHolder, WindowInfo.Subtitle or "", { Size = 10, Color = "SubText", Align = LeftTitle and "Left" or "Center", LayoutOrder = 2, Visible = WindowInfo.Subtitle ~= nil })
 
     if Window.SidebarVisible == nil then Window.SidebarVisible = true end
@@ -6983,26 +7621,52 @@ function Library:CreateWindow(WindowInfo)
         then Pad(TabsList, 0, 0, 0, 0)
         else Pad(TabsList, Skin.Tabs.Pad or 10, 8, 8, 8)
 
-    local FooterLabel
+    local FooterLabel, ChipParts
     if WindowInfo.ShowUserChip then
         local Chip = New("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, -1, 0, ChipH), Parent = Sidebar })
-        New("Frame", { BackgroundColor3 = "Outline", BackgroundTransparency = 0.4, Size = UDim2.new(1, -16, 0, 1), Position = UDim2.fromOffset(8, 0), Parent = Chip })
+        local ChipLine = New("Frame", { BackgroundColor3 = "Outline", BackgroundTransparency = 0.4, Size = UDim2.new(1, -16, 0, 1), Position = UDim2.fromOffset(8, 0), Parent = Chip })
         local Avatar = New("ImageLabel", { BackgroundColor3 = "Control", BackgroundTransparency = 0, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 1), Size = UDim2.fromOffset(30, 30), Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=48&h=48", LocalPlayer.UserId), Parent = Chip })
         Corner(Avatar, 99)
-        New("TextLabel", { Position = UDim2.fromOffset(50, 9), Size = UDim2.new(1, -58, 0, 16), Text = LocalPlayer.DisplayName, FontFace = "FontBold", TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Chip })
+        local Name = New("TextLabel", { Position = UDim2.fromOffset(50, 9), Size = UDim2.new(1, -58, 0, 16), Text = LocalPlayer.DisplayName, FontFace = "FontBold", TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Chip })
         FooterLabel = New("TextLabel", { Position = UDim2.fromOffset(50, 26), Size = UDim2.new(1, -58, 0, 14), Text = Library:ToRichText(WindowInfo.Footer), TextSize = 11, TextColor3 = "SubText", TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Chip })
+        ChipParts = { Chip = Chip, Line = ChipLine, Avatar = Avatar, Name = Name, Footer = FooterLabel }
+        -- a rail has no width for a name: centre the avatar and drop the text
+        function Window:ApplyChipStyle()
+            local T = Library:SkinTabs()
+            local Compact = T.CompactChip == true
+            ChipParts.Name.Visible = not Compact
+            ChipParts.Footer.Visible = not Compact
+            ChipParts.Line.AnchorPoint = Compact and Vector2.new(0.5, 0) or Vector2.new(0, 0)
+            ChipParts.Line.Position = Compact and UDim2.new(0.5, 0, 0, 0) or UDim2.fromOffset(8, 0)
+            ChipParts.Line.Size = Compact and UDim2.new(1, -20, 0, 1) or UDim2.new(1, -16, 0, 1)
+            ChipParts.Avatar.AnchorPoint = Compact and Vector2.new(0.5, 0.5) or Vector2.new(0, 0.5)
+            ChipParts.Avatar.Position = Compact and UDim2.fromScale(0.5, 0.5) or UDim2.new(0, 12, 0.5, 1)
+        end
+        Window.ApplyChipStyle()
     end
 
     --// Content
     local ChromeH = TitleH + TabH
     local HeaderH = if Skin.Content.ShowHeader ~= false then (Skin.Content.HeaderHeight or 54) else 0
     local SidebarX = if SkinBar then 0 else SidebarWidth
-    local Content = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(SidebarX, ChromeH), Size = UDim2.new(1, -SidebarX, 1, -ChromeH), ClipsDescendants = true, Parent = Main })
+    -- Some skins frame the content area as its own recessed panel (Vitality does); others run it
+    -- flush against the sidebar. BackgroundTransparency stays 1 when no panel is asked for.
+    local PanelOn = Skin.Content.Panel == true
+    local PanelPad = PanelOn and (Skin.Content.PanelPad or 6) or 0
+    local Content = New("Frame", {
+        BackgroundColor3 = PanelOn and "Content" or Color3.new(1, 1, 1), BackgroundTransparency = PanelOn and 0 or 1,
+        Position = UDim2.fromOffset(SidebarX + (PanelOn and PanelPad or 0), ChromeH + (PanelOn and PanelPad or 0)),
+        Size = UDim2.new(1, -SidebarX - (PanelOn and PanelPad * 2 or 0), 1, -ChromeH - (PanelOn and PanelPad * 2 or 0)),
+        ClipsDescendants = true, Parent = Main,
+    })
+    Corner(Content, Skin.Content.Panel and (Skin.CornerKeep and 0 or 8) or 0)
+    local ContentStroke = Stroke(Content, "Outline", 1, PanelOn and 0.25 or 1)
+    Window.ContentPanel, Window.ContentStroke = Content, ContentStroke
     local Header = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, HeaderH), Visible = HeaderH > 0, Parent = Content })
     List(Header, 1, nil, nil, Enum.VerticalAlignment.Center)
     local HeaderPad = Pad(Header, 0, Skin.Content.PadX or 16, 0, (Skin.Content.PadX or 16) + 4)
-    local PageTitle = New("TextLabel", { Size = UDim2.new(1, 0, 0, 24), Text = "", FontFace = "FontBold", TextSize = 20, TextXAlignment = Enum.TextXAlignment.Left, Parent = Header })
-    local PageDesc = New("TextLabel", { Size = UDim2.new(1, 0, 0, 14), Text = "", TextSize = 12, TextColor3 = "SubText", TextXAlignment = Enum.TextXAlignment.Left, Visible = false, Parent = Header })
+    local PageTitle = New("TextLabel", { Size = UDim2.new(1, 0, 0, 26), Text = "", FontFace = "FontBold", TextSize = Skin.Content.TitleSize or 20, TextXAlignment = Enum.TextXAlignment.Left, Parent = Header })
+    local PageDesc = New("TextLabel", { Size = UDim2.new(1, 0, 0, 15), Text = "", TextSize = Skin.Content.DescSize or 12, TextColor3 = "SubText", TextXAlignment = Enum.TextXAlignment.Left, Visible = false, Parent = Header })
     local Pages = New("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, HeaderH), Size = UDim2.new(1, 0, 1, -HeaderH), Parent = Content })
 
     local ScrollArrow = Glyph(Content, "chevron-down", "▾", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -16, 1, -12), Size = UDim2.fromOffset(16, 16), Color = "SubText", Visible = false })
@@ -7101,6 +7765,11 @@ function Library:CreateWindow(WindowInfo)
         TitleH = S.Titlebar.Height or 40
         TabH = Bar and (S.Tabs.Height or 38) or 0
         HeaderH = if S.Content.ShowHeader ~= false then (S.Content.HeaderHeight or 54) else 0
+        PageTitle.TextSize = S.Content.TitleSize or 20
+        PageDesc.TextSize = S.Content.DescSize or 12
+        for _, Row in (Library.ButtonRows or {}) do
+            if Row.Parent then Row.Size = UDim2.new(1, 0, 0, (S.Button and S.Button.Height) or 28) end
+        end
         local ChromeH = TitleH + TabH
         SidebarX = if Bar then 0 else SidebarWidth
 
@@ -7109,12 +7778,24 @@ function Library:CreateWindow(WindowInfo)
         TabBar.Size = UDim2.new(1, 0, 0, TabH)
         TabBar.Visible = Bar
 
+        SidebarWidth = (S.Tabs.SidebarWidth) or WindowInfo.ExplicitSidebarWidth or WindowInfo.DefaultSidebarWidth
+        WindowInfo.SidebarWidth = SidebarWidth
+        SidebarX = if Bar then 0 else SidebarWidth
         Sidebar.Position = UDim2.fromOffset(0, TitleH)
         Sidebar.Size = UDim2.new(0, SidebarWidth, 1, -TitleH)
         Sidebar.Visible = (not Bar) and Window.SidebarVisible ~= false
 
-        Content.Position = UDim2.fromOffset(SidebarX, ChromeH)
-        Content.Size = UDim2.new(1, -SidebarX, 1, -ChromeH)
+        local PanelOn2 = S.Content.Panel == true
+        local Inset = PanelOn2 and (S.Content.PanelPad or 6) or 0
+        Content.BackgroundTransparency = PanelOn2 and 0 or 1
+        if PanelOn2 then
+            Content.BackgroundColor3 = Library.Scheme[S.Content.PanelColor or "Content"]
+            Bind(Content, "BackgroundColor3", S.Content.PanelColor or "Content")
+        end
+        ContentStroke.Transparency = PanelOn2 and 0.25 or 1
+        Content.Position = UDim2.fromOffset(SidebarX + Inset, ChromeH + Inset)
+        Content.Size = UDim2.new(1, -SidebarX - Inset * 2, 1, -ChromeH - Inset * 2)
+        if Window.ApplyFrame then Window.ApplyFrame() end
         Header.Size = UDim2.new(1, 0, 0, HeaderH)
         Header.Visible = HeaderH > 0 and Window.TabTitleVisible ~= false
         local PadX = S.Content.PadX or 16
@@ -7146,6 +7827,11 @@ function Library:CreateWindow(WindowInfo)
 
         if Window.Lights then Window.Lights.Visible = S.Titlebar.TrafficLights ~= false and WindowInfo.ShowTrafficLights ~= false end
         if Window.SetWordmark then Window.SetWordmark(S.Titlebar.Icon) end
+        if Window.RefreshTitleCase then pcall(Window.RefreshTitleCase, S) end
+        if Window.ApplyChipStyle then pcall(Window.ApplyChipStyle) end
+        if Library.ActiveTab and Library.ActiveTab.Window == Window then
+            PageTitle.Text = Library:ToRichText(Library:HeaderCase(Library.ActiveTab.Name))
+        end
         -- left-aligned skins only indent past the traffic lights when they actually exist
         local LightsOn = S.Titlebar.TrafficLights ~= false and WindowInfo.ShowTrafficLights ~= false
         TitleHolder.Position = LeftTitle and UDim2.new(0, LightsOn and 46 or 16, 0.5, 0) or UDim2.fromScale(0.5, 0.5)
@@ -7323,19 +8009,47 @@ function Library:CreateWindow(WindowInfo)
             Size = BarMode and UDim2.new(0, BarTabWidth, 1, 0) or UDim2.new(1, 0, 0, TabSkin.Height or 30),
         })
         Corner(Btn, 7)
+        Library:RegisterShadow(Btn, "tab")
         if BarMode then Flex(Btn) end
         local Icon = Library:GetCustomIcon(IconName)
+        -- Icon-only rows turn the sidebar into a rail: the label is kept (search and other code
+        -- still reads it) but hidden, and the glyph is centred in the row.
+        local IconOnly = TabSkin.IconOnly == true
+        local IconPx = TabSkin.IconSize or 16
         local IconImg
         if Icon then
-            IconImg = New("ImageLabel", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 9, 0.5, 0), Size = UDim2.fromOffset(16, 16), ImageColor3 = Icon.Custom and "AccentText" or "Accent", Visible = TabSkin.Icons ~= false, Parent = Btn })
+            IconImg = New("ImageLabel", {
+                AnchorPoint = IconOnly and Vector2.new(0.5, 0.5) or Vector2.new(0, 0.5),
+                Position = IconOnly and UDim2.fromScale(0.5, 0.5) or UDim2.new(0, 9, 0.5, 0),
+                Size = UDim2.fromOffset(IconPx, IconPx), ImageColor3 = (TabSkin.IconIdle or (Icon.Custom and "AccentText" or "Accent")),
+                Visible = TabSkin.Icons ~= false, Parent = Btn,
+            })
             Library:ApplyIcon(IconImg, Icon)
         end
         local BtnLabel = New("TextLabel", {
             Position = UDim2.fromOffset(Icon and 34 or 12, 0), Size = UDim2.new(1, Icon and -40 or -16, 1, 0),
-            Text = Name, TextXAlignment = BarMode and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
-            TextTruncate = Enum.TextTruncate.AtEnd, TextColor3 = "SubText", Parent = Btn,
+            Text = TabSkin.Uppercase and string.upper(Name) or Name,
+            TextXAlignment = BarMode and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd, TextColor3 = "SubText", Visible = not (IconOnly and Icon ~= nil), Parent = Btn,
         })
-        -- optional left accent rail on sidebar rows (Vitality: a 2px crimson sliver on hover/active)
+        -- a rail has no room for labels, so the name becomes a tooltip
+        if IconOnly and Icon then pcall(function() Library:AddTooltip(Name, Btn) end) end
+        -- hairline separators between tab cells (both sidebar rows and bar cells can use them)
+        if TabSkin.Separator then
+            if BarMode then
+                New("Frame", {
+                    BackgroundColor3 = "Outline", BackgroundTransparency = 0.25, BorderSizePixel = 0,
+                    AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.new(0, 1, 0.62, 0), Parent = Btn,
+                })
+            else
+                New("Frame", {
+                    BackgroundColor3 = "Outline", BackgroundTransparency = 0.35, BorderSizePixel = 0,
+                    AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, -8, 0, 1), Parent = Btn,
+                })
+            end
+        end
+
+        -- optional left accent rail on sidebar rows (Vitality: a 2px accent sliver on hover/active)
         local RailBar
         if not BarMode then
             -- always built (one cheap frame) so a skin swapped in later can turn it on
@@ -7351,8 +8065,9 @@ function Library:CreateWindow(WindowInfo)
         if BarMode and TabSkin.ActiveStyle == "Underline" then
             BarLine = New("Frame", {
                 BackgroundColor3 = "Accent", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1),
-                Size = UDim2.new(1, -20, 0, 2), Visible = false, Parent = Btn,
+                Size = UDim2.new(1, -(TabSkin.LineInset or 20), 0, TabSkin.LineHeight or 2), Visible = false, Parent = Btn,
             })
+            Corner(BarLine, 99)
         end
         if BarMode and TabSkin.Separator then
             New("Frame", {
@@ -7580,13 +8295,36 @@ function Library:CreateWindow(WindowInfo)
                 -- the rail is a hover affordance; on the active row the fill already does the job
                 Tween(RailBar, { BackgroundTransparency = (Hovering and not Sel) and 0.15 or 1 })
             end
+            local ShadowFrame = Library.ShadowFrames[Btn]
+            if ShadowFrame then ShadowFrame.Visible = Sel end
 
             if Sel then
-                local Key = Underline and "Titlebar" or T.ActiveStyle == "Line" and "Titlebar" or "Accent"
-                Tween(Btn, { BackgroundColor3 = Library.Scheme[Key], BackgroundTransparency = Underline and 1 or 0 })
+                -- "Accent" is the reference's tab treatment: no fill, the label and icon carry the
+                -- accent colour. "Fill" / "Underline" / "Line" keep their old behaviour.
+                local Style = T.ActiveStyle or "Fill"
+                -- "Invert" stamps the row in ink and flips the label to the panel colour. On a dark
+                -- palette the same trick would be ink on ink, so it inverts the other way round:
+                -- a light plate carrying the window colour.
+                local Light = Library.Scheme.IsLight == true
+                local InvertFill = Light and "Outline" or "Text"
+                local InvertText = Light and "Card" or "Window"
+                local Key = (Style == "Underline" or Style == "Line") and "Titlebar"
+                    or (Style == "Accent" and "ControlHover")
+                    or (Style == "Invert" and InvertFill)
+                    or "Accent"
+                -- a skin can name the exact pair it wants, which is how tinted "selected" pills
+                -- (accent at low opacity with an accent label) are expressed without new styles
+                local Alpha = (Style == "Accent" or Underline) and 1 or 0
+                if T.ActiveFill then Key = T.ActiveFill end
+                if T.ActiveFillTransparency ~= nil then Alpha = T.ActiveFillTransparency end
+                Tween(Btn, { BackgroundColor3 = Library.Scheme[Key], BackgroundTransparency = Alpha })
                 Bind(Btn, "BackgroundColor3", Key)
-                local TextKey = Underline and "Accent" or (T.ActiveStyle == "Line" and "Text" or "AccentText")
-                BtnLabel.TextColor3 = Library.Scheme[TextKey]
+                local TextKey = (Style == "Underline" or Style == "Accent") and "Accent"
+                    or (Style == "Line" and "Text")
+                    or (Style == "Invert" and InvertText)
+                    or "AccentText"
+                if T.ActiveText then TextKey = T.ActiveText end
+                Anim(BtnLabel, { TextColor3 = Library.Scheme[TextKey] })
                 Bind(BtnLabel, "TextColor3", TextKey)
                 if IconImg then IconImg.ImageColor3 = Library.Scheme[TextKey]; Bind(IconImg, "ImageColor3", TextKey) end
             else
@@ -7597,8 +8335,9 @@ function Library:CreateWindow(WindowInfo)
                 BtnLabel.TextColor3 = Hovering and Library.Scheme.Text or Library.Scheme[LabelKey]
                 Bind(BtnLabel, "TextColor3", Hovering and "Text" or LabelKey)
                 if IconImg then
-                    local K = Icon.Custom and "AccentText" or "Accent"
-                    IconImg.ImageColor3 = Library.Scheme[K]; Bind(IconImg, "ImageColor3", K)
+                    local K = T.IconIdle or (Icon.Custom and "AccentText" or "Accent")
+                    Bind(IconImg, "ImageColor3", K)
+                    IconImg.ImageColor3 = Library.Scheme[K]
                 end
             end
         end
@@ -7610,7 +8349,7 @@ function Library:CreateWindow(WindowInfo)
             Library.ActiveTab = Tab
             if Tab.Section and Tab.Section.Collapsed then Tab.Section:SetCollapsed(false) end
 
-            PageTitle.Text = Library:ToRichText(Tab.Name)
+            PageTitle.Text = Library:ToRichText(Library:HeaderCase(Tab.Name))
             PageDesc.Text = Library:ToRichText(Tab.Description or "")
             PageDesc.Visible = Tab.Description ~= nil and Tab.Description ~= ""
 
@@ -7648,10 +8387,19 @@ function Library:CreateWindow(WindowInfo)
                 local Stray = Btn:FindFirstChildOfClass("UIFlexItem")
                 if Stray then Stray:Destroy() end
             end
+            local IconOnly = T.IconOnly == true and Icon ~= nil
             BtnLabel.Size = if Icon then UDim2.new(1, -40, 1, 0) else UDim2.new(1, -16, 1, 0)
             BtnLabel.Position = UDim2.fromOffset(Icon and 34 or 12, 0)
             BtnLabel.TextXAlignment = Bar and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
-            if IconImg then IconImg.Visible = T.Icons ~= false end
+            BtnLabel.Text = T.Uppercase and string.upper(Tab.Name) or Tab.Name
+            BtnLabel.Visible = not IconOnly
+            if IconImg then
+                local Px = T.IconSize or 16
+                IconImg.Visible = T.Icons ~= false
+                IconImg.Size = UDim2.fromOffset(Px, Px)
+                IconImg.AnchorPoint = IconOnly and Vector2.new(0.5, 0.5) or Vector2.new(0, 0.5)
+                IconImg.Position = IconOnly and UDim2.fromScale(0.5, 0.5) or UDim2.new(0, 9, 0.5, 0)
+            end
             if RailBar then RailBar.Visible = (not Bar) and T.Rail == true end
             Tab:RefreshStyle()
             if Bar and not Tab.BarLine then
@@ -7766,13 +8514,35 @@ function Library:CreateWindow(WindowInfo)
             if CardOrder == nil then CardOrder = #CardParent:GetChildren() + 1 end
             local Card = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), ClipsDescendants = true, AutomaticSize = Enum.AutomaticSize.Y, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = CardOrder, Parent = CardParent })
             Corner(Card, 10)
-            Stroke(Card, "Outline", 1, 0.5)
+            local CardStroke = Stroke(Card, "Outline", 1, 0.5)
             Library:AddSurface(Card, 0, 0.85)
-            Grad(Card, Two("Card", 0.035, -0.015), 90)
+            local CardGrad = Grad(Card, Two("Card", 0.035, -0.015), 90)
+            Library:RegisterHighlight(Card)
             List(Card, 0)
 
             local BoxSkin = Library:SkinGroupbox()
-            local Head = New("TextButton", { Size = UDim2.new(1, 0, 0, BoxSkin.HeaderHeight or 36), LayoutOrder = 1, Parent = Card })
+            -- Some designs have no card at all: the section is just a caption, a hairline and its
+            -- controls sitting directly on the content panel. `Card = false` strips the surface,
+            -- the border and the edge light but keeps the header and its divider.
+            local function ApplyCardChrome(BS)
+                local Solid = BS.Card ~= false
+                Library:AddSurface(Card, Solid and 0 or 1, 0.85)
+                CardStroke.Transparency = Solid and 0.5 or 1
+                CardGrad.Enabled = Solid
+                if Solid then
+                    Library:RegisterHighlight(Card)
+                else
+                    Library.HighlightKinds[Card] = nil
+                    local HF = Library.HighlightFrames[Card]
+                    if HF then HF:Destroy() end
+                    Library.HighlightFrames[Card] = nil
+                end
+            end
+            ApplyCardChrome(BoxSkin)
+            local Head = New("TextButton", {
+                BackgroundColor3 = "Element", BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, BoxSkin.HeaderHeight or 36), LayoutOrder = 1, Parent = Card,
+            })
             local BoxIcon = Library:GetCustomIcon(Info.IconName)
             local ShowBoxIcon = BoxSkin.Icon ~= false
             local HeaderIcon
@@ -7783,11 +8553,30 @@ function Library:CreateWindow(WindowInfo)
                 })
                 Library:ApplyIcon(HeaderIcon, BoxIcon)
             end
+            local HeadPadX = BoxSkin.HeaderPadX or 14
             local HeaderText = New("TextLabel", {
-                Position = UDim2.fromOffset(BoxIcon and ShowBoxIcon and 36 or 14, 0), Size = UDim2.new(1, -(BoxIcon and ShowBoxIcon and 60 or 40), 1, 0),
-                Text = Info.Name, FontFace = "FontBold", TextSize = BoxSkin.HeaderSize or 13,
+                BackgroundTransparency = 1, Position = UDim2.fromOffset(BoxIcon and ShowBoxIcon and 36 or HeadPadX, 0),
+                Size = UDim2.new(1, -(BoxIcon and ShowBoxIcon and 60 or (HeadPadX + 26)), 1, 0),
+                Text = BoxSkin.Uppercase and string.upper(Info.Name) or Info.Name,
+                FontFace = BoxSkin.HeaderBold == false and "Font" or "FontBold", TextSize = BoxSkin.HeaderSize or 13,
+                TextColor3 = BoxSkin.HeaderColor or "Text",
                 TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, Parent = Head,
             })
+            Bind(HeaderText, "TextColor3", BoxSkin.HeaderColor or "Text")
+            -- Optional accent spine down the left edge of the card (Brutal). It hangs off the
+            -- header rather than the card: the card carries a UIListLayout, which would
+            -- reposition (and flatten) an absolutely-placed child. The card clips descendants,
+            -- so an over-tall strip is trimmed to the card's height for free.
+            local Spine
+            local function MakeSpine()
+                local F = New("Frame", {
+                    BackgroundColor3 = "Accent", BorderSizePixel = 0, ZIndex = 5,
+                    Position = UDim2.fromOffset(0, 0), Size = UDim2.fromOffset(3, 4096), Parent = Head,
+                })
+                Bind(F, "BackgroundColor3", "Accent")
+                return F
+            end
+            if BoxSkin.Spine then Spine = MakeSpine() end
             local Arrow = Glyph(Head, "chevron-down", "▾", { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.fromOffset(14, 14), Visible = Info.DisableCollapsing ~= true })
 
             local Line = New("Frame", { BackgroundColor3 = "Outline", BackgroundTransparency = 0.5, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 2, Parent = Card })
@@ -7802,19 +8591,49 @@ function Library:CreateWindow(WindowInfo)
                 Pinned = false, HomeParent = CardParent, HomeOrder = CardOrder,
             }
 
+            -- declared before ApplySkin so the closure can see it (it is created further down)
+            local Placeholder
+
             -- Live skin change: header height, label size, icon visibility, body padding
             function Groupbox:ApplySkin()
                 local BS = Library:SkinGroupbox()
                 Head.Size = UDim2.new(1, 0, 0, BS.HeaderHeight or 36)
                 HeaderText.TextSize = BS.HeaderSize or 13
+                -- casing is part of the skin, so a live swap has to re-case the label too
+                HeaderText.Text = BS.Uppercase and string.upper(Groupbox.Name) or Groupbox.Name
+                ApplyCardChrome(BS)
+                HeaderText.FontFace = BS.HeaderBold == false and Library.Scheme.Font or Library.Scheme.FontBold
+                Bind(HeaderText, "TextColor3", BS.HeaderColor or "Text")
+                HeaderText.TextColor3 = Library.Scheme[BS.HeaderColor or "Text"]
+                if Arrow then Arrow.Visible = BS.Chevron ~= false and Info.DisableCollapsing ~= true end
                 if HeaderIcon then HeaderIcon.Visible = BS.Icon ~= false end
+                -- boxed sections get a filled header strip with a hairline under it
+                local FillKey = BS.HeaderFill
+                Anim(Head, { BackgroundTransparency = FillKey and 0 or 1 }, true)
+                if FillKey then Head.BackgroundColor3 = Library.Scheme[FillKey]; Bind(Head, "BackgroundColor3", FillKey) end
+                Line.Visible = BS.HeaderDivider == true and not Groupbox.Collapsed
                 local P = BS.Pad or 12
                 BodyPad.PaddingTop, BodyPad.PaddingBottom = UDim.new(0, P), UDim.new(0, P)
                 BodyPad.PaddingLeft, BodyPad.PaddingRight = UDim.new(0, P), UDim.new(0, P)
-                Placeholder.Size = UDim2.new(1, 0, 0, BS.HeaderHeight or 36)
+                if Placeholder then
+                    Placeholder.Size = UDim2.new(1, 0, 0, BS.HeaderHeight or 36)
+                    -- the pinned stand-in copies the header, so it has to follow the skin as well
+                    if Groupbox.PinLabel then
+                        Groupbox.PinLabel.Text = BS.Uppercase and string.upper(Groupbox.Name) or Groupbox.Name
+                        Groupbox.PinLabel.TextSize = BS.HeaderSize or 13
+                    end
+                end
+                HeaderText.Position = UDim2.fromOffset(BoxIcon and ShowBoxIcon and 36 or (BS.HeaderPadX or 14), 0)
+                HeaderText.Text = BS.Uppercase and string.upper(Groupbox.Name) or Groupbox.Name
+                if not Spine and BS.Spine then
+                    Spine = MakeSpine()
+                elseif Spine and not BS.Spine then
+                    Spine:Destroy()
+                    Spine = nil
+                end
             end
 
-            local Placeholder = New("TextButton", {
+            Placeholder = New("TextButton", {
                 BackgroundColor3 = Color3.new(1, 1, 1), Size = UDim2.new(1, 0, 0, 36),
                 LayoutOrder = CardOrder, Visible = false, AutoButtonColor = false, Parent = CardParent,
             })
@@ -7830,9 +8649,10 @@ function Library:CreateWindow(WindowInfo)
                 })
                 Library:ApplyIcon(PImg, BoxIcon)
             end
-            New("TextLabel", {
+            local PinLabel = New("TextLabel", {
                 Position = UDim2.fromOffset(BoxIcon and 36 or 14, 0), Size = UDim2.new(1, -(BoxIcon and 70 or 50), 1, 0),
-                Text = Info.Name, FontFace = "FontBold", TextXAlignment = Enum.TextXAlignment.Left,
+                Text = BoxSkin.Uppercase and string.upper(Info.Name) or Info.Name, FontFace = "FontBold", TextSize = BoxSkin.HeaderSize or 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
                 TextTruncate = Enum.TextTruncate.AtEnd, TextTransparency = 0.35, Parent = Placeholder,
             })
             local PinHint = Glyph(Placeholder, "pin", "📌", {
@@ -7840,14 +8660,31 @@ function Library:CreateWindow(WindowInfo)
                 Size = UDim2.fromOffset(14, 14), Color = "SubText",
             })
             GlyphTransparency(PinHint, 0.35)
-            Groupbox.Placeholder = Placeholder
+            Groupbox.Placeholder, Groupbox.PinLabel = Placeholder, PinLabel
 
             local FloatScale
             function Groupbox:SetCollapsed(C)
                 if Info.DisableCollapsing then return end
+                if Groupbox.Collapsed == C then return end
                 Groupbox.Collapsed = C
-                Body.Visible, Line.Visible = not C, not C
+                Line.Visible = (not C) and (Library:SkinGroupbox().HeaderDivider == true)
                 Tween(Arrow, { Rotation = C and -90 or 0 }, Library.SlowTween)
+                -- fade + shorten the body so the card closes smoothly instead of popping shut
+                if C then
+                    local H = Body.AbsoluteSize.Y
+                    Body.Visible = true
+                    Tween(Body, { Size = UDim2.new(1, 0, 0, math.max(0, H)), BackgroundTransparency = 1 }, Library.PopTween)
+                    task.delay(0.12, function()
+                        if Groupbox.Collapsed and not Groupbox.Destroyed then
+                            Body.Visible = false
+                            Body.Size = UDim2.new(1, 0, 0, 0)
+                        end
+                    end)
+                else
+                    Body.Visible = true
+                    Body.Size = UDim2.new(1, 0, 0, 0)
+                    Tween(Body, { BackgroundTransparency = 1 }, Library.SlowTween)
+                end
                 if Library.KickScrolls then task.defer(Library.KickScrolls) end
             end
             function Groupbox:ToggleCollapsed() Groupbox:SetCollapsed(not Groupbox.Collapsed) end
@@ -8018,6 +8855,7 @@ function Library:CreateWindow(WindowInfo)
             Stroke(Card, "Outline", 1, 0.5)
             Library:AddSurface(Card, 0, 0.85)
             Grad(Card, Two("Card", 0.035, -0.015), 90)
+            Library:RegisterHighlight(Card)
             List(Card, 0)
 
             local SegWrap = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 44), LayoutOrder = 1, Parent = Card })
