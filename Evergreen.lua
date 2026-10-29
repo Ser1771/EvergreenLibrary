@@ -294,8 +294,8 @@ local Library = {
     -- Bump this whenever the file changes: `print(Evergreen.Version)` on the client is the fastest
     -- way to tell which copy is actually loaded (a stale raw.githubusercontent cache prints the old
     -- stamp, or nil if the copy predates this field).
-    Version = "1.1.0",
-    Build = "2026.10.29 - mock-isolation fix",
+    Version = "1.2.0",
+    Build = "2026.10.29 - instance-state fix (KnobSize/PopScale/LedInner)",
     AppName = "Evergreen",
     Themes = Themes,
 
@@ -1363,6 +1363,14 @@ function Library:GetSkins(): { string }
     for Name in Skins do table.insert(Names, Name) end
     table.sort(Names)
     return Names
+end
+
+-- Library:RegisterSkin("Compact", { GapScale = 0.6, ... })  -- partial specs merge over Default
+function Library:RegisterSkin(Name: string, Spec: { [string]: any }): boolean
+    if typeof(Name) ~= "string" or Name == "" or typeof(Spec) ~= "table" then return false end
+    Skins[Name] = Spec
+    Library.Skins = Skins
+    return true
 end
 
 function Library:GetSkinSpec(Name): any
@@ -3530,11 +3538,15 @@ function Funcs:AddToggle(Idx, Info)
     Toggle.TextLabel = Label
 
     local Switch, Knob, Check, SwitchBox = nil, nil, nil, false
+    -- Parts and measurements live in locals, not on the Instances: Roblox throws
+    -- "<name> is not a valid member of Frame" for anything assigned that is not a real property.
+    local KnobSize, PopScale, LedInner
     -- The control is rebuilt from scratch when the skin changes style
     local function BuildToggleControl()
         if Switch then
             Switch:Destroy()
             Switch, Knob, Check = nil, nil, nil
+            KnobSize, PopScale, LedInner = nil, nil, nil
         end
         local ST = Library:SkinToggle()
         local BoxSize = ST.BoxSize or 18
@@ -3549,7 +3561,7 @@ function Funcs:AddToggle(Idx, Info)
             Knob = New("Frame", { BackgroundColor3 = Color3.new(1, 1, 1), AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 2, 0.5, 0), Size = UDim2.fromOffset(KS_, KS_), Parent = Switch })
             Corner(Knob, 99)
             Stroke(Knob, Color3.new(0, 0, 0), 1, 0.88)
-            Switch.KnobSize = KS_
+            KnobSize = KS_
         else
             -- "Led" is the reference's indicator: a tiny inset square that lights up in the accent
             local Led = ST.Style == "Led"
@@ -3567,14 +3579,14 @@ function Funcs:AddToggle(Idx, Info)
                 Corner(Inner, 1)
                 local InnerStroke = New("UIStroke", { Color = "OutlineShade", Thickness = 1, Transparency = 0.35, Parent = Inner })
                 Library.ThemeHooks[InnerStroke] = function() InnerStroke.Color = Library.Scheme.OutlineShade end
-                Switch.LedInner = Inner
+                LedInner = Inner
             else
                 Check = Glyph(Switch, "check", "✓", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(12, 12), Color = "AccentText" })
                 -- square "LED" styles have no tick: the filled color carries the state
                 Check.Visible = ST.CheckGlyph ~= false
                 if ST.CheckGlyph ~= false then GlyphTransparency(Check, 1) end
             end
-            Switch.PopScale = New("UIScale", { Scale = 1, Parent = Switch })
+            PopScale = New("UIScale", { Scale = 1, Parent = Switch })
         end
         Library:RegisterShadow(Switch, "toggle")
         if Toggle.Display then Toggle:Display(true) end
@@ -3587,7 +3599,7 @@ function Funcs:AddToggle(Idx, Info)
         if not SwitchBox then
             Anim(Switch, { BackgroundColor3 = On and Library.Scheme.Accent or Library.Scheme.Track, BackgroundTransparency = Dim }, Instant)
             Bind(Switch, "BackgroundColor3", On and "Accent" or "Track")
-            Anim(Knob, { Position = On and UDim2.new(1, -(Switch.KnobSize + 2), 0.5, 0) or UDim2.new(0, 2, 0.5, 0), BackgroundTransparency = Dim }, Instant)
+            Anim(Knob, { Position = On and UDim2.new(1, -((KnobSize or 16) + 2), 0.5, 0) or UDim2.new(0, 2, 0.5, 0), BackgroundTransparency = Dim }, Instant)
         else
             local Led = Library:SkinToggle().Style == "Led"
             Anim(Switch, {
@@ -3597,9 +3609,9 @@ function Funcs:AddToggle(Idx, Info)
             Bind(Switch, "BackgroundColor3", On and "Accent" or "Control")
             if Check and Check.Visible then GlyphTransparency(Check, On and Dim or 1) end
             -- the LED "lights up": a quick scale pop, skipped on the first paint and for reduced motion
-            if Switch.PopScale and not Instant and Library:SkinToggle().Pop ~= false and Toggle.Painted then
-                Switch.PopScale.Scale = 0.72
-                Tween(Switch.PopScale, { Scale = 1 }, Library.PopTween)
+            if PopScale and not Instant and Library:SkinToggle().Pop ~= false and Toggle.Painted then
+                PopScale.Scale = 0.72
+                Tween(PopScale, { Scale = 1 }, Library.PopTween)
             end
         end
         Toggle.Painted = true
